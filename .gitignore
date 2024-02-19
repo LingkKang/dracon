@@ -1,2 +1,6 @@
+# Rust build cache
+/target
+
+# Temporary files
 *temp*
 *tmp*
