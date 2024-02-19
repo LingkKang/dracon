@@ -3,4 +3,9 @@ name = "dracon"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
+[workspace]
+members = ["raft"]
+
+[lib]
+name = "raft"
+path = "raft/src/lib.rs"
