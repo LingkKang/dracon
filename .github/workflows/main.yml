@@ -1,0 +1,32 @@
+name: Cargo Build & Test
+
+# https://doc.rust-lang.org/cargo/guide/continuous-integration.html
+
+on:
+  push:
+  pull_request:
+
+  schedule:
+    - cron: '0 8 * * 5' # Runs at 08:00, only on Friday
+
+  workflow_dispatch: # Manually run the workflow
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    name: Rust project - latest
+    runs-on: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Rust
+        run: rustup update
+
+      - name: Build 
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
