@@ -21,7 +21,7 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main:main
-          git merge main
+          git merge main --allow-unrelated-histories
 
       - name: Generate Rustdoc
         run: |
