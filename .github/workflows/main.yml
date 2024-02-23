@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@main
 
       - name: Set up Rust
         run: rustup update
@@ -30,3 +30,12 @@ jobs:
 
       - name: Test
         run: cargo test --verbose
+
+  linter_check:
+    name: Rust Linter Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
