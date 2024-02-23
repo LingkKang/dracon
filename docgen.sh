@@ -11,5 +11,3 @@ cargo doc --document-private-items --no-deps
 cp -r target/doc ./docs
 
 cargo clean
-
-cd ..
