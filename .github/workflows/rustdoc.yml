@@ -17,6 +17,8 @@ jobs:
 
       - name: Merge main into doc
         run: |
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main:main
           git merge main --no-ff
 
