@@ -29,6 +29,8 @@ jobs:
 
       - name: Add and Commit Rustdoc
         run: |
+          chmod +x ./docgen.sh
           ./docgen.sh
           git commit -am ":memo: $(date --utc "+%Y-%m-%d %H:%M:%S.%2N")"
           git push origin doc
+        shell: bash

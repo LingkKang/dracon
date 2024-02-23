@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm -rf docs
 
 cargo clean
