@@ -1,4 +1,4 @@
-name: Generate and deploy Rust doc
+name: Generate & deploy Rust doc
 on:
   push:
     branches:
