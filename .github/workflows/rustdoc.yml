@@ -1,0 +1,32 @@
+name: Generate and deploy Rust doc
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Generate & deploy Rust doc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout doc branch
+        uses: actions/checkout@main
+        with:
+          ref: doc
+
+      - name: Merge main into doc
+        run: |
+          git fetch origin main:main
+          git merge main --no-ff
+
+      - name: Generate Rustdoc
+        run: |
+          rustup update
+          cargo doc --no-deps --document-private-items
+
+      - name: Add and Commit Rustdoc
+        run: |
+          ./docgen.sh
+          git commit -am ":memo: $(date --utc "+%Y-%m-%d %H:%M:%S.%2N")"
+          git push origin doc
