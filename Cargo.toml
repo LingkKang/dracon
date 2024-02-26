@@ -10,3 +10,6 @@ members = ["raft"]
 [lib]
 name = "raft"
 path = "raft/src/lib.rs"
+
+[dev-dependencies]
+line_cracker = "0.1.1"

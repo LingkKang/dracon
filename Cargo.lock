@@ -5,6 +5,15 @@ version = 3
 [[package]]
 name = "dracon"
 version = "0.1.0"
+dependencies = [
+ "line_cracker",
+]
+
+[[package]]
+name = "line_cracker"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b8a1b80c4178f1dd06e79ca947350b49fafba2656fb67b3a4cea25b4d0a5125"
 
 [[package]]
 name = "raft"
