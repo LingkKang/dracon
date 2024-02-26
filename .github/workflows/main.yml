@@ -1,10 +1,13 @@
 name: Cargo Build & Test
 
-# https://doc.rust-lang.org/cargo/guide/continuous-integration.html
-
 on:
   push:
-  pull_request:
+    branches-ignore:
+      - "doc*"
+    paths:
+      - "*.rs"
+      - "Cargo.toml"
+      - ".github/workflows/main.yml"
 
   schedule:
     - cron: '0 8 * * 5' # Runs at 08:00, only on Friday
