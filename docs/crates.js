@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["raft"];
+window.ALL_CRATES = ["raft","server"];
