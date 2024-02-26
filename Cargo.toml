@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Lingkang <contact@lingkang.dev>"]
 
 [workspace]
-members = ["raft"]
+members = ["raft", "server"]
 
 [lib]
 name = "raft"
@@ -13,3 +13,7 @@ path = "raft/src/lib.rs"
 
 [dev-dependencies]
 line_cracker = "0.1.1"
+
+[[bin]]
+name = "server"
+path = "server/src/main.rs"
