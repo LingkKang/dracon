@@ -8,21 +8,19 @@ pub struct Node {
     /// The current term of the node.
     /// Initialized to `0` on first boot, and increases monotonically.
     current_term: u128,
-}
 
-/// By default, a new node is created with [`Status::Follower`] status.
-impl Default for Node {
-    fn default() -> Self {
-        Node::new()
-    }
+    /// The IP address of the node.
+    local_ip: String,
 }
 
 impl Node {
     /// Create a new node with [`Status::Follower`] status.
-    pub fn new() -> Self {
+    pub fn new(local_ip: String) -> Self {
+        println!("[DEBUG] Creating Node with IP: {}", local_ip);
         Node {
             status: Status::Follower,
             current_term: 0,
+            local_ip,
         }
     }
 
@@ -34,6 +32,10 @@ impl Node {
     /// Get the current term of the node.
     pub fn current_term(&self) -> u128 {
         self.current_term
+    }
+
+    pub fn local_ip(&self) -> &String {
+        &self.local_ip
     }
 
     /// Check if the node is a leader.
@@ -68,19 +70,14 @@ impl Status {
 mod tests {
     use super::*;
 
+    static LOCAL_IP: &'static str = "127.0.0.0";
+
     /// Make sure that a new node is created with:
     /// - Status::Follower
     /// - Term 0
     #[test]
     fn test_new() {
-        let node = Node::new();
-        assert!(matches!(node.status(), Status::Follower));
-        assert_eq!(node.current_term(), 0);
-    }
-
-    #[test]
-    fn test_default() {
-        let node = Node::default();
+        let node = Node::new(LOCAL_IP.to_string());
         assert!(matches!(node.status(), Status::Follower));
         assert_eq!(node.current_term(), 0);
     }
