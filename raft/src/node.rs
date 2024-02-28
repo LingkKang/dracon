@@ -11,6 +11,10 @@ pub struct Node {
 
     /// The IP address of the node.
     local_ip: String,
+
+    /// Election timeout in milliseconds.
+    /// Typically 150 - 300 ms.
+    election_timeout: u16,
 }
 
 impl Node {
@@ -21,6 +25,7 @@ impl Node {
             status: Status::Follower,
             current_term: 0,
             local_ip,
+            election_timeout: 300,
         }
     }
 
@@ -34,6 +39,7 @@ impl Node {
         self.current_term
     }
 
+    /// Get the IP address of the node.
     pub fn local_ip(&self) -> &String {
         &self.local_ip
     }
@@ -41,6 +47,16 @@ impl Node {
     /// Check if the node is a leader.
     pub fn is_leader(&self) -> bool {
         self.status.is_leader()
+    }
+
+    pub fn timeout(&self) {
+        println!(
+            "[DEBUG] Initial election timeout for Node: {} in {} ms.",
+            self.local_ip, self.election_timeout
+        );
+        std::thread::sleep(std::time::Duration::from_millis(
+            self.election_timeout as u64,
+        ));
     }
 }
 

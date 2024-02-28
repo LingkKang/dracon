@@ -25,6 +25,6 @@ fn main() {
     println!("[INFO] Machine started with IP: {}", local_ip);
 
     let node = Node::new(local_ip);
-    std::thread::sleep(std::time::Duration::from_secs(15));
+    node.timeout();
     println!("Hello, world from Node {}", node.local_ip());
 }
