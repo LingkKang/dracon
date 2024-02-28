@@ -17,3 +17,6 @@ line_cracker = "0.1.1"
 [[bin]]
 name = "server"
 path = "server/src/main.rs"
+
+[dependencies]
+rand = "0.8.5"
