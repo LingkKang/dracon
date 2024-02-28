@@ -1,5 +1,7 @@
 //! In Raft, each server is represented as a node [`Node`].
 
+use rand::Rng;
+
 /// A Raft node that represents a server in the cluster.
 pub struct Node {
     /// The current status of the node.
@@ -21,11 +23,12 @@ impl Node {
     /// Create a new node with [`Status::Follower`] status.
     pub fn new(local_ip: String) -> Self {
         println!("[DEBUG] Creating Node with IP: {}", local_ip);
+        let mut rng = rand::thread_rng();
         Node {
             status: Status::Follower,
             current_term: 0,
             local_ip,
-            election_timeout: 300,
+            election_timeout: rng.gen_range(150..=300),
         }
     }
 
