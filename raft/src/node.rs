@@ -89,7 +89,7 @@ impl Status {
 mod tests {
     use super::*;
 
-    static LOCAL_IP: &'static str = "127.0.0.0";
+    static LOCAL_IP: &str = "127.0.0.0";
 
     /// Make sure that a new node is created with:
     /// - Status::Follower
