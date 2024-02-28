@@ -98,9 +98,27 @@
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! In Raft, each server is represented as a node [`Node`].
 
-/// A Raft node that represents a server in the cluster.
+</span><span class="kw">use </span>rand::Rng;
+
+<span class="doccomment">/// A Raft node that represents a server in the cluster.
 </span><span class="kw">pub struct </span>Node {
     <span class="doccomment">/// The current status of the node.
     </span>status: Status,
@@ -108,21 +126,25 @@
     <span class="doccomment">/// The current term of the node.
     /// Initialized to `0` on first boot, and increases monotonically.
     </span>current_term: u128,
-}
 
-<span class="doccomment">/// By default, a new node is created with [`Status::Follower`] status.
-</span><span class="kw">impl </span>Default <span class="kw">for </span>Node {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        Node::new()
-    }
+    <span class="doccomment">/// The IP address of the node.
+    </span>local_ip: String,
+
+    <span class="doccomment">/// Election timeout in milliseconds.
+    /// Typically 150 - 300 ms.
+    </span>election_timeout: u16,
 }
 
 <span class="kw">impl </span>Node {
     <span class="doccomment">/// Create a new node with [`Status::Follower`] status.
-    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(local_ip: String) -&gt; <span class="self">Self </span>{
+        <span class="macro">println!</span>(<span class="string">"[DEBUG] Creating Node with IP: {}"</span>, local_ip);
+        <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
         Node {
             status: Status::Follower,
             current_term: <span class="number">0</span>,
+            local_ip,
+            election_timeout: rng.gen_range(<span class="number">150</span>..=<span class="number">300</span>),
         }
     }
 
@@ -136,9 +158,24 @@
         <span class="self">self</span>.current_term
     }
 
+    <span class="doccomment">/// Get the IP address of the node.
+    </span><span class="kw">pub fn </span>local_ip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>String {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.local_ip
+    }
+
     <span class="doccomment">/// Check if the node is a leader.
     </span><span class="kw">pub fn </span>is_leader(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.status.is_leader()
+    }
+
+    <span class="kw">pub fn </span>timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="macro">println!</span>(
+            <span class="string">"[DEBUG] Initial election timeout for Node: {} in {} ms."</span>,
+            <span class="self">self</span>.local_ip, <span class="self">self</span>.election_timeout
+        );
+        std::thread::sleep(std::time::Duration::from_millis(
+            <span class="self">self</span>.election_timeout <span class="kw">as </span>u64,
+        ));
     }
 }
 
@@ -168,19 +205,14 @@
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
+    <span class="kw">static </span>LOCAL_IP: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str = <span class="string">"127.0.0.0"</span>;
+
     <span class="doccomment">/// Make sure that a new node is created with:
     /// - Status::Follower
     /// - Term 0
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_new() {
-        <span class="kw">let </span>node = Node::new();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(node.status(), Status::Follower));
-        <span class="macro">assert_eq!</span>(node.current_term(), <span class="number">0</span>);
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_default() {
-        <span class="kw">let </span>node = Node::default();
+        <span class="kw">let </span>node = Node::new(LOCAL_IP.to_string());
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(node.status(), Status::Follower));
         <span class="macro">assert_eq!</span>(node.current_term(), <span class="number">0</span>);
     }
