@@ -29,10 +29,16 @@
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>raft::node::Node;
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>logger::Logger;
+<span class="kw">use </span>raft::node::Node;
 <span class="kw">use </span>std::collections::HashSet;
 
 <span class="kw">fn </span>main() {
+    Logger::init(<span class="prelude-val">Some</span>(log::LevelFilter::Trace));
+
     <span class="attr">#[rustfmt::skip]
     </span><span class="comment">// The initial pool of IP addresses for all starting nodes.
     </span><span class="kw">let </span><span class="kw-2">mut </span>ip_pool: HashSet&lt;String&gt; = HashSet::from([
@@ -53,7 +59,7 @@
 
     <span class="kw">let </span>local_ip = local_ip.expect(<span class="string">"No IP address provided"</span>);
 
-    <span class="macro">println!</span>(<span class="string">"[INFO] Machine started with IP: {}"</span>, local_ip);
+    <span class="macro">log::info!</span>(<span class="string">"Machine started with IP: {}"</span>, local_ip);
 
     <span class="kw">let </span>node = Node::new(local_ip);
     node.timeout();
