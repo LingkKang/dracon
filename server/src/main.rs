@@ -1,4 +1,4 @@
-use logger::logger::Logger;
+use logger::Logger;
 use raft::node::Node;
 use std::collections::HashSet;
 
