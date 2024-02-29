@@ -45,10 +45,12 @@
 //! This apply both to library and binary targets.
 
 mod time;
-extern crate log;
-
 use time::get_formatted_time;
 
+extern crate colored;
+use colored::*;
+
+extern crate log;
 use log::{LevelFilter, Log, Metadata, Record};
 
 /// A custom logger struct that uses stdout to print logs.
@@ -102,7 +104,12 @@ impl Log for Logger {
                 }
             };
             let time_str = get_formatted_time();
-            let message = format!("{} [{}] {}", time_str, level_str, record.args());
+            let message = format!(
+                "{} {} {}",
+                time_str,
+                colorize_level_string(level_str),
+                record.args()
+            );
             println!("{}", message);
         }
     }
@@ -110,4 +117,49 @@ impl Log for Logger {
     /// Flush the logger.
     /// As stdout is used, no need to flush, so this method is empty.
     fn flush(&self) {}
+}
+
+fn colorize_level_string(level: String) -> colored::ColoredString {
+    match level.as_str() {
+        "ERROR" => level.red().bold(),
+        "WARN" => level.magenta().bold(),
+        "INFO" => level.green().bold(),
+        "DEBUG" => level.cyan(),
+        "TRACE" => level.normal(),
+        _ => level.normal(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use log::LevelFilter;
+
+    #[test]
+    fn test_colorize_level_string() {
+        let level = "ERROR".to_string();
+        let level_in_color = colorize_level_string(level);
+        assert_eq!(level_in_color.fgcolor(), Some(Color::Red));
+        assert!(level_in_color.style().contains(Styles::Bold));
+
+        let random_text = "random".to_string();
+        let random_text_in_color = colorize_level_string(random_text);
+        assert!(random_text_in_color.is_plain());
+    }
+
+    #[test]
+    fn test_color() {
+        println!("{}", colorize_level_string("ERROR".to_string()));
+        println!("{}", colorize_level_string("WARN".to_string()));
+        println!("{}", colorize_level_string("INFO".to_string()));
+        println!("{}", colorize_level_string("DEBUG".to_string()));
+        println!("{}", colorize_level_string("TRACE".to_string()));
+        println!("{}", colorize_level_string("random".to_string()));
+    }
+
+    #[test]
+    fn test_logger_init() {
+        Logger::init(Some(LevelFilter::Debug));
+        assert_eq!(log::max_level(), LevelFilter::Debug);
+    }
 }
