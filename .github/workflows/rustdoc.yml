@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "**.rs"
+      - "Cargo.toml"
+      - ".github/workflows/rustdoc.yml"
 
 jobs:
   build:
