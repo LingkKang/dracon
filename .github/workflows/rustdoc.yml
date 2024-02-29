@@ -26,10 +26,11 @@ jobs:
       - name: Generate Rustdoc
         run: |
           rustup update
-          cargo doc --no-deps --document-private-items
+          cargo doc --document-private-items
 
       - name: Add and Commit Rustdoc
         run: |
+          rm -rf ./docs/*
           chmod +x ./docgen.sh
           ./docgen.sh
           git add ./docs

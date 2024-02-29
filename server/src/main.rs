@@ -1,7 +1,10 @@
+use logger::Logger;
 use raft::node::Node;
 use std::collections::HashSet;
 
 fn main() {
+    Logger::init(Some(log::LevelFilter::Trace));
+
     #[rustfmt::skip]
     // The initial pool of IP addresses for all starting nodes.
     let mut ip_pool: HashSet<String> = HashSet::from([
@@ -22,7 +25,7 @@ fn main() {
 
     let local_ip = local_ip.expect("No IP address provided");
 
-    println!("[INFO] Machine started with IP: {}", local_ip);
+    log::info!("Machine started with IP: {}", local_ip);
 
     let node = Node::new(local_ip);
     node.timeout();
