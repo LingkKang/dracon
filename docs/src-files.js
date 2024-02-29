@@ -1,8 +1,10 @@
 var srcIndex = new Map(JSON.parse('[\
 ["cfg_if",["",[],["lib.rs"]]],\
 ["chrono",["",[["datetime",[],["mod.rs"]],["format",[],["formatting.rs","locales.rs","mod.rs","parse.rs","parsed.rs","scan.rs","strftime.rs"]],["naive",[["datetime",[],["mod.rs"]],["time",[],["mod.rs"]]],["date.rs","internals.rs","isoweek.rs","mod.rs"]],["offset",[["local",[["tz_info",[],["mod.rs","parser.rs","rule.rs","timezone.rs"]]],["mod.rs","unix.rs"]]],["fixed.rs","mod.rs","utc.rs"]]],["date.rs","lib.rs","month.rs","round.rs","time_delta.rs","traits.rs","weekday.rs"]]],\
+["colored",["",[],["color.rs","control.rs","customcolors.rs","error.rs","lib.rs","style.rs"]]],\
 ["getrandom",["",[],["error.rs","error_impls.rs","lazy.rs","lib.rs","linux_android.rs","use_file.rs","util.rs","util_libc.rs"]]],\
 ["iana_time_zone",["",[],["ffi_utils.rs","lib.rs","tz_linux.rs"]]],\
+["lazy_static",["",[],["inline_lazy.rs","lib.rs"]]],\
 ["libc",["",[["unix",[["linux_like",[["linux",[["arch",[["generic",[],["mod.rs"]]],["mod.rs"]],["gnu",[["b64",[["x86_64",[],["align.rs","mod.rs","not_x32.rs"]]],["mod.rs"]]],["align.rs","mod.rs"]]],["align.rs","mod.rs","non_exhaustive.rs"]]],["mod.rs"]]],["align.rs","mod.rs"]]],["fixed_width_ints.rs","lib.rs","macros.rs"]]],\
 ["log",["",[],["__private_api.rs","lib.rs","macros.rs"]]],\
 ["logger",["",[],["lib.rs","time.rs"]]],\

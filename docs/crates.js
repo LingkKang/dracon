@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["cfg_if","chrono","getrandom","iana_time_zone","libc","log","logger","num_traits","ppv_lite86","raft","rand","rand_chacha","rand_core","server"];
+window.ALL_CRATES = ["cfg_if","chrono","colored","getrandom","iana_time_zone","lazy_static","libc","log","logger","num_traits","ppv_lite86","raft","rand","rand_chacha","rand_core","server"];
