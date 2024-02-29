@@ -4,4 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-raft = { path = "../raft"}
+raft = { path = "../raft" }
+logger = { path = "../logger" }
+log = { version = "0.4.21", features = ["std"] }

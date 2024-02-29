@@ -47,6 +47,7 @@ impl Logger {
         // Note that `log` crate should be set with "sdt" feature.
         // See Cargo.toml for more details.
         log::set_boxed_logger(Box::new(logger)).unwrap();
+        log::trace!("Logger initialized with level: {:?}", record_level);
     }
 }
 
@@ -65,7 +66,7 @@ impl Log for Logger {
                 }
             };
             let time_str = get_formatted_time();
-            let message = format!("{} [{}]\t {}", time_str, level_str, record.args());
+            let message = format!("{} [{}] {}", time_str, level_str, record.args());
             println!("{}", message);
         }
     }

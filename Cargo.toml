@@ -5,11 +5,7 @@ edition = "2021"
 authors = ["Lingkang <contact@lingkang.dev>"]
 
 [workspace]
-members = [ "logger","raft", "server"]
-
-[lib]
-name = "raft"
-path = "raft/src/lib.rs"
+members = ["logger", "raft", "server"]
 
 [dev-dependencies]
 line_cracker = "0.1.1"
@@ -19,4 +15,6 @@ name = "server"
 path = "server/src/main.rs"
 
 [dependencies]
-rand = "0.8.5"
+log = { version = "0.4.21", features = ["std"] }
+logger = { path = "logger" }
+raft = { path = "raft" }
