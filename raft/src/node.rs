@@ -22,7 +22,7 @@ pub struct Node {
 impl Node {
     /// Create a new node with [`Status::Follower`] status.
     pub fn new(local_ip: String) -> Self {
-        println!("[DEBUG] Creating Node with IP: {}", local_ip);
+        log::debug!("Creating Node with IP: {}", local_ip);
         let mut rng = rand::thread_rng();
         Node {
             status: Status::Follower,
@@ -53,13 +53,15 @@ impl Node {
     }
 
     pub fn timeout(&self) {
-        println!(
-            "[DEBUG] Initial election timeout for Node: {} in {} ms.",
-            self.local_ip, self.election_timeout
+        log::debug!(
+            "Initial election timeout for Node: {} in {} ms.",
+            self.local_ip,
+            self.election_timeout
         );
         std::thread::sleep(std::time::Duration::from_millis(
             self.election_timeout as u64,
         ));
+        log::trace!("Node: {} timed out.", self.local_ip);
     }
 }
 
