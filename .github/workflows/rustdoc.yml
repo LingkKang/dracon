@@ -1,4 +1,4 @@
-name: Generate & deploy Rust doc
+name: Generate Rust Doc
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Generate & deploy Rust doc
+    name: Generate Rust Doc
     runs-on: ubuntu-latest
 
     steps:
@@ -16,23 +16,28 @@ jobs:
           ref: doc
           token: ${{ secrets.GH_PAT}}
 
-      - name: Merge main into doc
+      - name: Merge `main` into `doc`
         run: |
           git config user.name "GitHub Actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main:main
           git merge main --allow-unrelated-histories -X theirs
 
-      - name: Generate Rustdoc
+      - name: Update and Clean up
         run: |
           rustup update
+          rm -rf ./docs/*
+          git rm -r --cached ./docs
+          cargo clean
+
+      - name: Generate Rustdoc
+        run: |
           cargo doc --document-private-items
+          echo '<meta http-equiv="refresh" content="0; url=server/index.html">' > ./target/doc/index.html
 
       - name: Add and Commit Rustdoc
         run: |
-          rm -rf ./docs/*
-          chmod +x ./docgen.sh
-          ./docgen.sh
+          cp -r target/doc/* ./docs
           git add ./docs
           if [[ -n $(git status -s) ]]; then
             git commit -m ":memo: $(date --utc "+%Y-%m-%d %H:%M:%S.%2N")"
