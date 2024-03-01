@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - "doc*"
     paths:
-      - "*.rs"
+      - "**.rs"
       - "Cargo.toml"
       - ".github/workflows/main.yml"
 
