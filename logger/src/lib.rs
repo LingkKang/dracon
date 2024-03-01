@@ -135,27 +135,62 @@ mod tests {
     use super::*;
     use log::LevelFilter;
 
-    #[test]
-    fn test_colorize_level_string() {
-        let level = "ERROR".to_string();
-        let level_in_color = colorize_level_string(level);
-        assert_eq!(level_in_color.fgcolor(), Some(Color::Red));
-        assert!(level_in_color.style().contains(Styles::Bold));
-
-        let random_text = "random".to_string();
-        let random_text_in_color = colorize_level_string(random_text);
-        assert!(random_text_in_color.is_plain());
+    macro_rules! test_colorize_level_string_color {
+        ($test_name:ident, $level:expr, $expected:expr) => {
+            // As `concat_idents!` is not stable,
+            // the name of test function should be typed manually.
+            #[test]
+            fn $test_name() {
+                let level = $level.to_string();
+                let level_in_color = colorize_level_string(level);
+                assert_eq!(level_in_color.fgcolor(), Some($expected));
+            }
+        };
     }
 
-    #[test]
-    fn test_color() {
-        println!("{}", colorize_level_string("ERROR".to_string()));
-        println!("{}", colorize_level_string("WARN".to_string()));
-        println!("{}", colorize_level_string("INFO".to_string()));
-        println!("{}", colorize_level_string("DEBUG".to_string()));
-        println!("{}", colorize_level_string("TRACE".to_string()));
-        println!("{}", colorize_level_string("random".to_string()));
+    test_colorize_level_string_color!(test_color_error, "ERROR", Color::Red);
+    test_colorize_level_string_color!(test_color_warn, "WARN", Color::Magenta);
+    test_colorize_level_string_color!(test_color_info, "INFO", Color::Green);
+    test_colorize_level_string_color!(test_color_debug, "DEBUG", Color::Cyan);
+
+    macro_rules! test_plain_level {
+        ($test_name:ident, $level:expr) => {
+            #[test]
+            fn $test_name() {
+                let level = $level.to_string();
+                let level_in_color = colorize_level_string(level);
+                assert!(level_in_color.is_plain());
+            }
+        };
     }
+
+    test_plain_level!(test_plain_trace, "TRACE");
+    test_plain_level!(test_plain_random_text, "random_text");
+
+    macro_rules! test_colorize_level_string_bold {
+        ($test_name:ident, $level:expr) => {
+            #[test]
+            fn $test_name() {
+                let level = $level.to_string();
+                let level_in_color = colorize_level_string(level);
+                assert!(level_in_color.style().contains(Styles::Bold));
+            }
+        };
+    }
+
+    test_colorize_level_string_bold!(test_bold_error, "ERROR");
+    test_colorize_level_string_bold!(test_bold_warn, "WARN");
+    test_colorize_level_string_bold!(test_bold_info, "INFO");
+
+    // #[test]
+    // fn test_color() {
+    //     println!("{}", colorize_level_string("ERROR".to_string()));
+    //     println!("{}", colorize_level_string("WARN".to_string()));
+    //     println!("{}", colorize_level_string("INFO".to_string()));
+    //     println!("{}", colorize_level_string("DEBUG".to_string()));
+    //     println!("{}", colorize_level_string("TRACE".to_string()));
+    //     println!("{}", colorize_level_string("random".to_string()));
+    // }
 
     #[test]
     fn test_logger_init() {
