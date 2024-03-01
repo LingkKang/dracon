@@ -164,6 +164,41 @@
 <a href="#163" id="163">163</a>
 <a href="#164" id="164">164</a>
 <a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Custom logger module.
 //!
 //! A custom logger implementation over [`log`] crate
@@ -301,29 +336,64 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span>log::LevelFilter;
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_colorize_level_string() {
-        <span class="kw">let </span>level = <span class="string">"ERROR"</span>.to_string();
-        <span class="kw">let </span>level_in_color = colorize_level_string(level);
-        <span class="macro">assert_eq!</span>(level_in_color.fgcolor(), <span class="prelude-val">Some</span>(Color::Red));
-        <span class="macro">assert!</span>(level_in_color.style().contains(Styles::Bold));
-
-        <span class="kw">let </span>random_text = <span class="string">"random"</span>.to_string();
-        <span class="kw">let </span>random_text_in_color = colorize_level_string(random_text);
-        <span class="macro">assert!</span>(random_text_in_color.is_plain());
+    <span class="macro">macro_rules! </span>test_colorize_level_string_color {
+        (<span class="macro-nonterminal">$test_name</span>:ident, <span class="macro-nonterminal">$level</span>:expr, <span class="macro-nonterminal">$expected</span>:expr) =&gt; {
+            <span class="comment">// As `concat_idents!` is not stable,
+            // the name of test function should be typed manually.
+            </span><span class="attr">#[test]
+            </span><span class="kw">fn </span><span class="macro-nonterminal">$test_name</span>() {
+                <span class="kw">let </span>level = <span class="macro-nonterminal">$level</span>.to_string();
+                <span class="kw">let </span>level_in_color = colorize_level_string(level);
+                <span class="macro">assert_eq!</span>(level_in_color.fgcolor(), <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$expected</span>));
+            }
+        };
     }
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_color() {
-        <span class="macro">println!</span>(<span class="string">"{}"</span>, colorize_level_string(<span class="string">"ERROR"</span>.to_string()));
-        <span class="macro">println!</span>(<span class="string">"{}"</span>, colorize_level_string(<span class="string">"WARN"</span>.to_string()));
-        <span class="macro">println!</span>(<span class="string">"{}"</span>, colorize_level_string(<span class="string">"INFO"</span>.to_string()));
-        <span class="macro">println!</span>(<span class="string">"{}"</span>, colorize_level_string(<span class="string">"DEBUG"</span>.to_string()));
-        <span class="macro">println!</span>(<span class="string">"{}"</span>, colorize_level_string(<span class="string">"TRACE"</span>.to_string()));
-        <span class="macro">println!</span>(<span class="string">"{}"</span>, colorize_level_string(<span class="string">"random"</span>.to_string()));
+    <span class="macro">test_colorize_level_string_color!</span>(test_color_error, <span class="string">"ERROR"</span>, Color::Red);
+    <span class="macro">test_colorize_level_string_color!</span>(test_color_warn, <span class="string">"WARN"</span>, Color::Magenta);
+    <span class="macro">test_colorize_level_string_color!</span>(test_color_info, <span class="string">"INFO"</span>, Color::Green);
+    <span class="macro">test_colorize_level_string_color!</span>(test_color_debug, <span class="string">"DEBUG"</span>, Color::Cyan);
+
+    <span class="macro">macro_rules! </span>test_plain_level {
+        (<span class="macro-nonterminal">$test_name</span>:ident, <span class="macro-nonterminal">$level</span>:expr) =&gt; {
+            <span class="attr">#[test]
+            </span><span class="kw">fn </span><span class="macro-nonterminal">$test_name</span>() {
+                <span class="kw">let </span>level = <span class="macro-nonterminal">$level</span>.to_string();
+                <span class="kw">let </span>level_in_color = colorize_level_string(level);
+                <span class="macro">assert!</span>(level_in_color.is_plain());
+            }
+        };
     }
 
-    <span class="attr">#[test]
+    <span class="macro">test_plain_level!</span>(test_plain_trace, <span class="string">"TRACE"</span>);
+    <span class="macro">test_plain_level!</span>(test_plain_random_text, <span class="string">"random_text"</span>);
+
+    <span class="macro">macro_rules! </span>test_colorize_level_string_bold {
+        (<span class="macro-nonterminal">$test_name</span>:ident, <span class="macro-nonterminal">$level</span>:expr) =&gt; {
+            <span class="attr">#[test]
+            </span><span class="kw">fn </span><span class="macro-nonterminal">$test_name</span>() {
+                <span class="kw">let </span>level = <span class="macro-nonterminal">$level</span>.to_string();
+                <span class="kw">let </span>level_in_color = colorize_level_string(level);
+                <span class="macro">assert!</span>(level_in_color.style().contains(Styles::Bold));
+            }
+        };
+    }
+
+    <span class="macro">test_colorize_level_string_bold!</span>(test_bold_error, <span class="string">"ERROR"</span>);
+    <span class="macro">test_colorize_level_string_bold!</span>(test_bold_warn, <span class="string">"WARN"</span>);
+    <span class="macro">test_colorize_level_string_bold!</span>(test_bold_info, <span class="string">"INFO"</span>);
+
+    <span class="comment">// #[test]
+    // fn test_color() {
+    //     println!("{}", colorize_level_string("ERROR".to_string()));
+    //     println!("{}", colorize_level_string("WARN".to_string()));
+    //     println!("{}", colorize_level_string("INFO".to_string()));
+    //     println!("{}", colorize_level_string("DEBUG".to_string()));
+    //     println!("{}", colorize_level_string("TRACE".to_string()));
+    //     println!("{}", colorize_level_string("random".to_string()));
+    // }
+
+    </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_logger_init() {
         Logger::init(<span class="prelude-val">Some</span>(LevelFilter::Debug));
         <span class="macro">assert_eq!</span>(log::max_level(), LevelFilter::Debug);
