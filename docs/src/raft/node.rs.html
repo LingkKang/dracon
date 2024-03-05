@@ -116,9 +116,25 @@
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! In Raft, each server is represented as a node [`Node`].
 
-</span><span class="kw">use </span>rand::Rng;
+</span><span class="kw">use </span>std::net::SocketAddr;
+
+<span class="kw">use </span>rand::Rng;
 
 <span class="doccomment">/// A Raft node that represents a server in the cluster.
 </span><span class="kw">pub struct </span>Node {
@@ -129,8 +145,13 @@
     /// Initialized to `0` on first boot, and increases monotonically.
     </span>current_term: u128,
 
-    <span class="doccomment">/// The IP address of the node.
-    </span>local_ip: String,
+    <span class="doccomment">/// A socket address is the composition of 
+    /// 
+    /// 1. IP address (either IPv4 or IPv6)
+    /// 2. port number in [`u16`]
+    /// 
+    /// [`SocketAddr`] is an enum of [`SocketAddr::V4`] and [`SocketAddr::V6`]
+    </span>socket_addr: SocketAddr,
 
     <span class="doccomment">/// Election timeout in milliseconds.
     /// Typically 150 - 300 ms.
@@ -139,13 +160,13 @@
 
 <span class="kw">impl </span>Node {
     <span class="doccomment">/// Create a new node with [`Status::Follower`] status.
-    </span><span class="kw">pub fn </span>new(local_ip: String) -&gt; <span class="self">Self </span>{
-        <span class="macro">log::debug!</span>(<span class="string">"Creating Node with IP: {}"</span>, local_ip);
+    </span><span class="kw">pub fn </span>new(socket_addr: SocketAddr) -&gt; <span class="self">Self </span>{
+        <span class="macro">log::debug!</span>(<span class="string">"Creating Node with IP: {}"</span>, socket_addr);
         <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
         Node {
             status: Status::Follower,
             current_term: <span class="number">0</span>,
-            local_ip,
+            socket_addr,
             election_timeout: rng.gen_range(<span class="number">150</span>..=<span class="number">300</span>),
         }
     }
@@ -161,8 +182,8 @@
     }
 
     <span class="doccomment">/// Get the IP address of the node.
-    </span><span class="kw">pub fn </span>local_ip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>String {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.local_ip
+    </span><span class="kw">pub fn </span>socket_addr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>SocketAddr {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.socket_addr
     }
 
     <span class="doccomment">/// Check if the node is a leader.
@@ -173,13 +194,13 @@
     <span class="kw">pub fn </span>timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="macro">log::debug!</span>(
             <span class="string">"Initial election timeout for Node: {} in {} ms."</span>,
-            <span class="self">self</span>.local_ip,
+            <span class="self">self</span>.socket_addr,
             <span class="self">self</span>.election_timeout
         );
         std::thread::sleep(std::time::Duration::from_millis(
             <span class="self">self</span>.election_timeout <span class="kw">as </span>u64,
         ));
-        <span class="macro">log::trace!</span>(<span class="string">"Node: {} timed out."</span>, <span class="self">self</span>.local_ip);
+        <span class="macro">log::trace!</span>(<span class="string">"Node: {} timed out."</span>, <span class="self">self</span>.socket_addr);
     }
 }
 
@@ -209,16 +230,23 @@
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">static </span>LOCAL_IP: <span class="kw-2">&amp;</span>str = <span class="string">"127.0.0.0"</span>;
+    <span class="kw">static </span>LOCAL_ADDR: <span class="kw-2">&amp;</span>str = <span class="string">"127.0.0.0:2024"</span>;
 
     <span class="doccomment">/// Make sure that a new node is created with:
     /// - Status::Follower
     /// - Term 0
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_new() {
-        <span class="kw">let </span>node = Node::new(LOCAL_IP.to_string());
+        <span class="kw">let </span>node = Node::new(LOCAL_ADDR.parse().unwrap());
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(node.status(), Status::Follower));
         <span class="macro">assert_eq!</span>(node.current_term(), <span class="number">0</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_socket() {
+        <span class="kw">let </span>node = Node::new(LOCAL_ADDR.parse().unwrap());
+        <span class="macro">assert!</span>(node.socket_addr().ip().is_loopback());
+        <span class="macro">assert_eq!</span>(node.socket_addr().port(), <span class="number">2024</span>);
     }
 
     <span class="attr">#[test]
