@@ -7,3 +7,4 @@ edition = "2021"
 raft = { path = "../raft" }
 logger = { path = "../logger" }
 log = { version = "0.4.21", features = ["std"] }
+tokio = { version = "1.36.0", features = ["rt", "net"] }
