@@ -13,11 +13,11 @@ pub struct Node {
     /// Initialized to `0` on first boot, and increases monotonically.
     current_term: u128,
 
-    /// A socket address is the composition of 
-    /// 
+    /// A socket address is the composition of
+    ///
     /// 1. IP address (either IPv4 or IPv6)
     /// 2. port number in [`u16`]
-    /// 
+    ///
     /// [`SocketAddr`] is an enum of [`SocketAddr::V4`] and [`SocketAddr::V6`]
     socket_addr: SocketAddr,
 

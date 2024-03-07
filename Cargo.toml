@@ -7,14 +7,11 @@ authors = ["Lingkang <contact@lingkang.dev>"]
 [workspace]
 members = ["logger", "raft", "server"]
 
-[dev-dependencies]
-line_cracker = "0.1.1"
-
 [[bin]]
 name = "server"
 path = "server/src/main.rs"
 
 [dependencies]
-log = { version = "0.4.21", features = ["std"] }
+log = "0.4.21"
 logger = { path = "logger" }
 raft = { path = "raft" }
