@@ -75,7 +75,6 @@ checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 name = "dracon"
 version = "0.1.0"
 dependencies = [
- "line_cracker",
  "log",
  "logger",
  "raft",
@@ -135,12 +134,6 @@ name = "libc"
 version = "0.2.153"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
-
-[[package]]
-name = "line_cracker"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b8a1b80c4178f1dd06e79ca947350b49fafba2656fb67b3a4cea25b4d0a5125"
 
 [[package]]
 name = "log"

@@ -78,9 +78,7 @@ impl Logger {
         // If the level is not specified, use `Trace` as default level.
         let record_level = level.unwrap_or(LevelFilter::Trace);
         log::set_max_level(record_level);
-        let logger = Logger {
-            default_level: record_level,
-        };
+        let logger = Logger { default_level: record_level };
         // Set the logger as the global logger.
         // Note that `log` crate should be set with "sdt" feature.
         // See Cargo.toml for more details.
