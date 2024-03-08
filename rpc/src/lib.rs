@@ -44,7 +44,7 @@ impl Service {
                 log::info!("Received request [{}] from [{}]", req, addr);
                 if req == request.message {
                     let res = response.message.as_bytes();
-                    if let Err(e) = stream.write_all(&res).await {
+                    if let Err(e) = stream.write_all(res).await {
                         log::error!("Failed to write to socket: {}", e);
                     }
                 } else {
@@ -57,7 +57,7 @@ impl Service {
 
     pub async fn send_request(&self, request: Request, target_addr: SocketAddr) {
         let mut stream = tokio::net::TcpStream::connect(target_addr).await.unwrap();
-        stream.write_all(&request.message.as_bytes()).await.unwrap();
+        stream.write_all(request.message.as_bytes()).await.unwrap();
         log::info!("Sent request [{}] to [{}]", request.message, target_addr);
 
         let mut buffer = Vec::new();

@@ -52,8 +52,7 @@ async fn main() {
     log::debug!("Listening on {}", listener.local_addr().unwrap());
     tokio::spawn(async move {
         loop {
-            let (coming_stream, coming_socket) =
-                listener.accept().await.unwrap();
+            let (coming_stream, coming_socket) = listener.accept().await.unwrap();
             tokio::spawn(handle_ping(coming_stream, coming_socket));
         }
     });
@@ -77,7 +76,7 @@ async fn handle_ping(mut stream: tokio::net::TcpStream, socket: SocketAddr) {
     let mut buffer = [0; 64];
     loop {
         let n = match stream.read(&mut buffer).await {
-            Ok(n) if n == 0 => {
+            Ok(0) => {
                 log::debug!("Connection closed");
                 break;
             }
@@ -108,29 +107,24 @@ async fn send_ping(socket: SocketAddr) {
     if let Ok(mut stream) = tokio::net::TcpStream::connect(&socket).await {
         if let Err(e) = stream.write_all(b"ping\n").await {
             log::error!("Failed to write to socket; err = {:?}", e);
-            // break;
         }
         let mut buffer = [0; 64];
-        loop {
-            let n = match stream.read(&mut buffer).await {
-                Ok(n) if n == 0 => {
-                    log::debug!("Connection closed");
-                    break;
-                }
-                Ok(n) => n,
-                Err(e) => {
-                    log::error!("Failed to read from socket; err = {:?}", e);
-                    break;
-                }
-            };
-
-            let message = String::from_utf8_lossy(&buffer[..n]);
-            let message = message.trim(); // Remove the trailing newline.
-            log::info!("Get response '{}' from {}", message, socket);
-            break;
+        match stream.read(&mut buffer).await {
+            Ok(0) => {
+                log::debug!("Connection closed");
+            }
+            Ok(n) => {
+                let message = String::from_utf8_lossy(&buffer[..n]);
+                let message = message.trim(); // Remove the trailing newline.
+                log::info!("Received '{}' from {}", message, socket);
+            }
+            Err(e) => {
+                log::error!("Failed to read from socket; err = {:?}", e);
+            }
         }
         // Close the connection.
         drop(stream);
+    } else {
+        log::error!("Failed to connect to {}", socket);
     }
-    log::debug!("Sending ping to {}", socket);
 }
