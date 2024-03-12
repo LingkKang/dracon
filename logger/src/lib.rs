@@ -69,23 +69,60 @@ use log::{LevelFilter, Log, Metadata, Record};
 pub struct Logger {
     /// The default level of the logger.
     default_level: LevelFilter,
+    with_prefix: bool,
+    prefix: String,
 }
 
 impl Logger {
+    pub fn default_logger() -> Logger {
+        log::set_max_level(LevelFilter::Trace);
+        Logger {
+            default_level: LevelFilter::Trace,
+            with_prefix: false,
+            prefix: String::from("default_logger"),
+        }
+    }
+
     /// Static method to initialize the logger
     /// with an optional logging level.
     pub fn init(level: Option<LevelFilter>) {
         // If the level is not specified, use `Trace` as default level.
-        let record_level = level.unwrap_or(LevelFilter::Trace);
-        log::set_max_level(record_level);
-        let logger = Logger {
-            default_level: record_level,
-        };
+        let mut logger = Logger::default_logger();
+        // let mut record_level;
+        let record_level = logger.set_level_option(level);
         // Set the logger as the global logger.
         // Note that `log` crate should be set with "sdt" feature.
         // See Cargo.toml for more details.
         log::set_boxed_logger(Box::new(logger)).unwrap();
         log::trace!("Logger initialized with level: {:?}", record_level);
+    }
+
+    pub fn init_with_prefix(level: Option<LevelFilter>, prefix: String) {
+        let mut logger = Logger::default_logger();
+        let record_level = logger.set_level_option(level);
+        logger.set_logger_prefix(prefix);
+        log::set_boxed_logger(Box::new(logger)).unwrap();
+        log::trace!("Logger initialized with level: {:?}", record_level);
+    }
+
+    fn set_level(&mut self, level: LevelFilter) {
+        self.default_level = level;
+        log::set_max_level(level);
+    }
+
+    fn set_level_option(&mut self, level: Option<LevelFilter>) -> LevelFilter {
+        match level {
+            None => LevelFilter::Trace,
+            Some(record_level) => {
+                self.set_level(record_level);
+                record_level
+            }
+        }
+    }
+
+    fn set_logger_prefix(&mut self, prefix: String) {
+        self.with_prefix = true;
+        self.prefix = prefix;
     }
 }
 
@@ -104,12 +141,25 @@ impl Log for Logger {
                 }
             };
             let time_str = get_formatted_time();
-            let message = format!(
-                "{} {} {}",
-                time_str,
-                colorize_level_string(level_str),
-                record.args()
-            );
+            let message = match self.with_prefix {
+                true => {
+                    format!(
+                        "{} {} {} {}",
+                        time_str,
+                        self.prefix,
+                        colorize_level_string(level_str),
+                        record.args()
+                    )
+                }
+                false => {
+                    format!(
+                        "{} {} {}",
+                        time_str,
+                        colorize_level_string(level_str),
+                        record.args()
+                    )
+                }
+            };
             println!("{}", message);
         }
     }
@@ -183,8 +233,22 @@ mod tests {
     test_colorize_level_string_bold!(test_bold_info: "INFO");
 
     #[test]
+    fn test_logger_init_default() {
+        // let _guard = MUTEX.lock().unwrap();
+        Logger::init(None);
+        assert_eq!(log::max_level(), LevelFilter::Trace);
+    }
+
+    #[test]
     fn test_logger_init() {
         Logger::init(Some(LevelFilter::Debug));
         assert_eq!(log::max_level(), LevelFilter::Debug);
+    }
+
+    #[test]
+    fn test_logger_init_with_prefix() {
+        let prefix = String::from("test_logger");
+        Logger::init_with_prefix(Some(LevelFilter::Warn), prefix);
+        assert_eq!(log::max_level(), LevelFilter::Warn);
     }
 }
