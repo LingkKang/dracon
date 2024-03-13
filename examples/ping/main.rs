@@ -4,8 +4,11 @@ use logger::Logger;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
-    Logger::init(Some(log::LevelFilter::Trace));
-    log::info!("Hello, world!");
+    let input_socket = std::env::args()
+        .nth(1)
+        .expect("No command argument provided");
+    Logger::new().set_prefix(input_socket).init();
+    log::info!("Machine started");
 
     #[rustfmt::skip]
     // The initial pool of sockets for all starting nodes.
