@@ -8,7 +8,6 @@ async fn main() {
         .nth(1)
         .expect("No command argument provided");
     Logger::new().set_prefix(input_socket).init();
-    log::info!("Machine started");
 
     #[rustfmt::skip]
     // The initial pool of sockets for all starting nodes.
@@ -44,13 +43,12 @@ async fn main() {
     log::info!("Machine started with socket: {}", local_socket);
 
     let service = rpc::Service::new(SocketAddr::from(local_socket));
-
-    let lisen_servie = service.clone();
+    let listen_service = service.clone();
 
     let request = rpc::Request::new("ping".to_string());
     let response = rpc::Response::new("pong".to_string());
 
-    let task = tokio::spawn(async move { lisen_servie.handle_request(request, response).await });
+    let task = tokio::spawn(async move { listen_service.handle_request(request, response).await });
 
     let slp = 10;
     log::info!("Sleeping for {} seconds to wait for peers to start", slp);
@@ -67,10 +65,10 @@ async fn main() {
         });
     }
 
-    tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+    tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
 
-    match tokio::time::timeout(tokio::time::Duration::from_secs(45), task).await {
-        Ok(_) => log::trace!("Task completed"),
+    match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await {
+        Ok(_) => log::debug!("Task completed"),
         Err(_) => log::error!("Task timed out"),
     }
 

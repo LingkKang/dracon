@@ -33,8 +33,16 @@ impl Service {
     }
 
     pub async fn handle_request(&self, request: Request, response: Response) {
-        let listener = tokio::net::TcpListener::bind(&self.provider).await.unwrap();
-        log::info!("Listening on [{}]", self.provider);
+        let listener = tokio::net::TcpListener::bind(&self.provider).await;
+        match listener {
+            Ok(_) => log::info!("Listening on [{}]", self.provider),
+            Err(e) => {
+                log::error!("Failed to bind to socket: {}", e);
+                return;
+            }
+        }
+        let listener = listener.unwrap();
+
         let (mut stream, addr) = listener.accept().await.unwrap();
         log::debug!("Accepted connection from [{}]", addr);
         let mut buffer = Vec::new();
@@ -56,9 +64,18 @@ impl Service {
     }
 
     pub async fn send_request(&self, request: Request, target_addr: SocketAddr) {
-        let mut stream = tokio::net::TcpStream::connect(target_addr).await.unwrap();
+        let stream = tokio::net::TcpStream::connect(target_addr).await;
+        match stream {
+            Ok(_) => log::debug!("Connected to [{}]", target_addr),
+            Err(e) => {
+                log::error!("Failed to connect to [{}]: {}", target_addr, e);
+                return;
+            }
+        }
+        let mut stream = stream.unwrap();
+
         stream.write_all(request.message.as_bytes()).await.unwrap();
-        log::info!("Sent request [{}] to [{}]", request.message, target_addr);
+        log::debug!("Sent request [{}] to [{}]", request.message, target_addr);
 
         let mut buffer = Vec::new();
         stream.read_to_end(&mut buffer).await.unwrap();
