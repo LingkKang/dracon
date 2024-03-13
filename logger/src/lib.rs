@@ -83,6 +83,15 @@ pub struct Logger {
     prefix: String,
 }
 
+/// Implement the default trait for the logger.
+///
+/// See [Clippy Lints :: new_without_default](https://rust-lang.github.io/rust-clippy/master/index.html#/new_without_default)
+impl Default for Logger {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Logger {
     /// Create a new global logger with default level
     /// set to [`LevelFilter::Trace`].
