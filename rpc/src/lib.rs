@@ -10,6 +10,16 @@ impl Request {
     pub fn new(message: String) -> Self {
         Self { message }
     }
+
+    pub fn message(&self) -> String {
+        self.message.clone()
+    }
+
+    pub fn get_serialized_message(&self) -> Vec<u8> {
+        let mut msg = self.message.clone().into_bytes();
+        msg.push(0);
+        msg
+    }
 }
 
 pub struct Response {
@@ -49,6 +59,7 @@ impl Service {
         match stream.read_to_end(&mut buffer).await {
             Ok(_) => {
                 let req = String::from_utf8(buffer).unwrap();
+                let req = req.trim();
                 log::info!("Received request [{}] from [{}]", req, addr);
                 if req == request.message {
                     let res = response.message.as_bytes();
@@ -74,11 +85,18 @@ impl Service {
         }
         let mut stream = stream.unwrap();
 
-        stream.write_all(request.message.as_bytes()).await.unwrap();
+        let message = request.get_serialized_message();
+        stream.write_all(&message).await.unwrap();
         log::debug!("Sent request [{}] to [{}]", request.message, target_addr);
 
         let mut buffer = Vec::new();
-        stream.read_to_end(&mut buffer).await.unwrap();
+        match stream.read_to_end(&mut buffer).await {
+            Ok(_) => {}
+            Err(e) => {
+                log::error!("Failed to read from socket: {}", e);
+                return;
+            }
+        }
         let res = String::from_utf8(buffer).unwrap();
         log::info!("Received response [{}] from [{}]", res, target_addr);
     }
