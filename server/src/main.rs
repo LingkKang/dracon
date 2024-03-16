@@ -6,7 +6,7 @@ use logger::Logger;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use std::net::{SocketAddr, SocketAddrV4};
+use std::net::SocketAddr;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -16,21 +16,18 @@ async fn main() {
 
     #[rustfmt::skip]
     // The initial pool of sockets for all starting nodes.
-    let mut sockets: std::collections::HashSet<SocketAddrV4> =
-        std::collections::HashSet::from([
-            "172.19.0.2:16", 
-            "172.19.0.3:16", 
-            "172.19.0.4:16"
-            ].map(|socket| socket.parse().unwrap()),
-        );
+    let mut sockets = read_config("./tmp/config.txt").unwrap();
 
-    let mut local_socket: Option<SocketAddrV4> = None;
+    let mut local_socket: Option<SocketAddr> = None;
 
     let args: Vec<String> = std::env::args().collect();
 
+    log::debug!("Arguments: {:?}", args);
+    log::debug!("Config: {:?}", sockets);
+
     // Remove local socket from the sockets pool.
     for arg in args {
-        let current_socket = arg.parse::<SocketAddrV4>();
+        let current_socket = arg.parse::<SocketAddr>();
         if current_socket.is_ok() {
             let current_socket = current_socket.unwrap();
             if sockets.contains(&current_socket) {
@@ -60,18 +57,48 @@ async fn main() {
         }
     });
 
-    let wait_time = 10;
+    let wait_time = 2;
     log::info!("Waiting for {wait_time} seconds to send pings to other nodes");
     tokio::time::sleep(tokio::time::Duration::from_secs(wait_time)).await;
 
     for socket in sockets {
         // Send pings to other nodes.
-        tokio::spawn(send_ping(SocketAddr::from(socket)));
+        tokio::spawn(send_ping(socket));
     }
 
     // wait to make sure other spawned tasks are done.
-    tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+    tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
     std::process::exit(0);
+}
+
+/// Read the configuration file and return a set of sockets.
+///
+/// The config file should contain a list of socket addresses, one per line.
+///
+/// For example:
+///
+/// ``` txt
+/// 172.19.0.2:16
+/// 172.19.0.3:16
+/// 172.19.0.4:16
+///
+/// ```
+fn read_config<P>(
+    path: P,
+) -> std::io::Result<std::collections::HashSet<SocketAddr>>
+where
+    P: AsRef<std::path::Path>,
+{
+    let file = std::fs::File::open(path)?;
+    let reader = std::io::BufReader::new(file);
+    let mut sockets = std::collections::HashSet::new();
+    for line in std::io::BufRead::lines(reader) {
+        let line = line?;
+        if let Ok(socket) = line.parse::<SocketAddr>() {
+            sockets.insert(socket);
+        }
+    }
+    Ok(sockets)
 }
 
 async fn handle_ping(mut stream: tokio::net::TcpStream, socket: SocketAddr) {
