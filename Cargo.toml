@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Lingkang <contact@lingkang.dev>"]
 
 [workspace]
-members = ["logger", "raft", "server"]
+members = ["logger", "raft", "rpc", "server"]
 
 [[bin]]
 name = "server"
@@ -15,3 +15,14 @@ path = "server/src/main.rs"
 log = "0.4.21"
 logger = { path = "logger" }
 raft = { path = "raft" }
+rpc = { path = "rpc" }
+tokio = { version = "1.36.0", features = [
+    "rt",
+    "io-util",
+    "net",
+    "time",
+    "macros",
+] }
+
+[[example]]
+name = "ping"

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-log = "0.4.21"
+log = { version = "0.4.21", features = ["std"] }
 logger = { path = "../logger" }
 raft = { path = "../raft" }
+tokio = { version = "1.36.0", features = ["rt", "net"] }
