@@ -26,6 +26,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main:main
           git merge main --allow-unrelated-histories -X theirs
+          git commit --amend -m ":twisted_rightwards_arrows: Merge branch `main` into `doc`"
 
       - name: Update and Clean up
         run: |
