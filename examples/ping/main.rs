@@ -61,8 +61,9 @@ async fn main() {
     }
 
     match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await {
-        Ok(_) => log::debug!("Task completed"),
-        Err(_) => log::info!("Task closed due to timeout"),
+        Ok(Ok(_)) => log::debug!("Task completed"),
+        Ok(Err(e)) => log::error!("Task failed due to error: {:?}", e),
+        Err(e) => log::info!("Task closed due to timeout: {:?}", e),
     }
 
     std::process::exit(0);

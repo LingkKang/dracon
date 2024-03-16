@@ -6,26 +6,46 @@ pub type Byte = u8;
 pub type Bytes = Vec<Byte>;
 pub type Result<T> = std::result::Result<T, std::io::Error>;
 
+/// Trait for RPC request.
 pub trait RpcRequest {
+    /// Serialize the request into [`Bytes`].
     fn serialize(&self) -> Bytes;
+
+    /// Deserialize the request from [`Bytes`].
     fn deserialize(data: Bytes) -> Self;
+
+    /// Convert the request into a [`String`].
     fn to_string(&self) -> String;
 }
 
+/// Trait for RPC response.
 pub trait RpcResponse {
+    /// Serialize the response into [`Bytes`].
     fn serialize(&self) -> Bytes;
+
+    /// Deserialize the response from [`Bytes`].
     fn deserialize(data: Bytes) -> Self;
+
+    /// Convert the response into a [`String`].
     fn to_string(&self) -> String;
 }
 
+/// RPC service.
+/// 
+/// Mainly used for sending requests and handling requests.
 #[derive(Clone)]
 pub struct Service<Req, Res>
 where
     Req: RpcRequest,
     Res: RpcResponse,
 {
+    /// Socket address of the service.
     socket: SocketAddr,
+
+    /// Request type.
     request: Req,
+
+    /// Response type.
     response: Res,
 }
 
@@ -34,6 +54,7 @@ where
     Req: RpcRequest,
     Res: RpcResponse,
 {
+    /// Create a new service.
     pub fn new(socket: SocketAddr, request: Req, response: Res) -> Self {
         Service {
             socket,
@@ -42,6 +63,7 @@ where
         }
     }
 
+    /// Send a request to the service.
     pub async fn send_request(&self, target: SocketAddr) -> Result<Res> {
         let mut stream = tokio::net::TcpStream::connect(target).await?;
         log::trace!("Connected to {:?}", target);
