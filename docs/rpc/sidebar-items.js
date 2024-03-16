@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["PingRequest","PingResponse","Service"],"trait":["RpcRequest","RpcResponse"],"type":["Byte","Bytes","PingService","Result"]};
