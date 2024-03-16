@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["handle_ping","main","send_ping"]};
+window.SIDEBAR_ITEMS = {"fn":["handle_ping","main","read_config","send_ping"]};
