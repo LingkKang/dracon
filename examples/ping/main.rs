@@ -44,8 +44,8 @@ async fn main() {
 
     let service = rpc::Service::new(
         SocketAddr::from(local_socket),
-        rpc::PingRequest,
-        rpc::PingResponse,
+        rpc::PingRequest::new("Ping".to_string()),
+        rpc::PingResponse::new("Pong".to_string()),
     );
     let listen_service = service.clone();
 
@@ -57,12 +57,7 @@ async fn main() {
 
     for socket in sockets {
         let s = service.clone();
-        tokio::spawn(async move {
-            s.send_request(
-                SocketAddr::from(socket),
-            )
-            .await
-        });
+        tokio::spawn(async move { s.send_request(SocketAddr::from(socket)).await });
     }
 
     match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await {
