@@ -42,15 +42,16 @@ async fn main() {
 
     log::info!("Machine started with socket: {}", local_socket);
 
-    let service = rpc::Service::new(SocketAddr::from(local_socket));
+    let service = rpc::Service::new(
+        SocketAddr::from(local_socket),
+        rpc::PingRequest,
+        rpc::PingResponse,
+    );
     let listen_service = service.clone();
 
-    let request = rpc::Request::new("ping".to_string());
-    let response = rpc::Response::new("pong".to_string());
+    let task = tokio::spawn(async move { listen_service.handle_request().await });
 
-    let task = tokio::spawn(async move { listen_service.handle_request(request, response).await });
-
-    let slp = 10;
+    let slp = 2;
     log::info!("Sleeping for {} seconds to wait for peers to start", slp);
     tokio::time::sleep(tokio::time::Duration::from_secs(slp)).await;
 
@@ -58,18 +59,15 @@ async fn main() {
         let s = service.clone();
         tokio::spawn(async move {
             s.send_request(
-                rpc::Request::new("ping".to_string()),
                 SocketAddr::from(socket),
             )
             .await
         });
     }
 
-    tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
-
     match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await {
         Ok(_) => log::debug!("Task completed"),
-        Err(_) => log::error!("Task timed out"),
+        Err(_) => log::info!("Task closed due to timeout"),
     }
 
     std::process::exit(0);

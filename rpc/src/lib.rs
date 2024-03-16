@@ -2,117 +2,132 @@ use std::net::SocketAddr;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-pub struct Request {
-    message: String,
+pub type Byte = u8;
+pub type Bytes = Vec<Byte>;
+pub type Result<T> = std::result::Result<T, std::io::Error>;
+
+pub trait RpcRequest {
+    fn serialize(&self) -> Bytes;
+    fn deserialize(data: Bytes) -> Self;
+    fn clone(&self) -> Self;
+    fn to_string(&self) -> String;
 }
 
-impl Request {
-    pub fn new(message: String) -> Self {
-        Self { message }
-    }
-
-    pub fn message(&self) -> String {
-        self.message.clone()
-    }
-
-    pub fn get_serialized_message(&self) -> Vec<u8> {
-        let mut msg = self.message.clone().into_bytes();
-        msg.push(0);
-        msg
-    }
+pub trait RpcResponse {
+    fn serialize(&self) -> Bytes;
+    fn deserialize(data: Bytes) -> Self;
+    fn clone(&self) -> Self;
+    fn to_string(&self) -> String;
 }
 
-pub struct Response {
-    message: String,
+#[derive(Clone)]
+pub struct Service<Req, Res>
+where
+    Req: RpcRequest,
+    Res: RpcResponse,
+{
+    socket: SocketAddr,
+    request: Req,
+    response: Res,
 }
 
-impl Response {
-    pub fn new(message: String) -> Self {
-        Self { message }
+impl<Req, Res> Service<Req, Res>
+where
+    Req: RpcRequest,
+    Res: RpcResponse,
+{
+    pub fn new(socket: SocketAddr, request: Req, response: Res) -> Self {
+        Service {
+            socket,
+            request,
+            response,
+        }
+    }
+
+    pub async fn send_request(&self, target: SocketAddr) -> Result<Res> {
+        let mut stream = tokio::net::TcpStream::connect(target).await?;
+        log::trace!("Connected to server: {:?}", target);
+
+        stream.write_all(&self.request.serialize()).await?;
+        log::debug!(
+            "Sent request [{}] to {}",
+            self.request.to_string(),
+            target
+        );
+
+        let mut buffer: Bytes = vec![0; 1024];
+        let n = stream.read(&mut buffer).await?;
+        let response = Res::deserialize(buffer[..n].to_vec());
+        log::info!(
+            "Received response [{}] from {}",
+            response.to_string(),
+            target
+        );
+
+        Ok(response)
+    }
+
+    pub async fn handle_request(&self) -> Result<()> {
+        let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind(self.socket).await?;
+        log::trace!("Listening on: {:?}", self.socket);
+        loop {
+            let (mut stream, addr) = listener.accept().await?;
+            log::trace!("Accepted connection from: {:?}", addr);
+
+            let mut buffer: Bytes = vec![0; 1024];
+            let n = stream.read(&mut buffer).await?;
+            let request = Req::deserialize(buffer[..n].to_vec());
+            log::debug!("Received request [{}] from {}", request.to_string(), addr);
+
+            let response = self.response.clone();
+            stream.write_all(&response.serialize()).await?;
+            log::info!("Sent response: {} to {}", response.to_string(), addr);
+        }
     }
 }
 
 #[derive(Clone)]
-pub struct Service {
-    provider: SocketAddr,
-}
+pub struct PingRequest;
 
-impl Service {
-    pub fn new(provider: SocketAddr) -> Self {
-        Self { provider }
+impl RpcRequest for PingRequest {
+    fn serialize(&self) -> Bytes {
+        vec![0]
     }
 
-    pub async fn handle_request(&self, request: Request, response: Response) {
-        let listener = tokio::net::TcpListener::bind(&self.provider).await;
-        match listener {
-            Ok(_) => log::info!("Listening on [{}]", self.provider),
-            Err(e) => {
-                log::error!("Failed to bind to socket: {}", e);
-                return;
-            }
-        }
-        let listener = listener.unwrap();
-
-        let (mut stream, addr) = listener.accept().await.unwrap();
-        log::debug!("Accepted connection from [{}]", addr);
-        let mut buffer = Vec::new();
-        match stream.read_to_end(&mut buffer).await {
-            Ok(_) => {
-                let req = String::from_utf8(buffer).unwrap();
-                let req = req.trim();
-                log::info!("Received request [{}] from [{}]", req, addr);
-                if req == request.message {
-                    let res = response.message.as_bytes();
-                    if let Err(e) = stream.write_all(res).await {
-                        log::error!("Failed to write to socket: {}", e);
-                    }
-                } else {
-                    log::warn!("Received invalid request [{}] from [{}]", req, addr)
-                }
-            }
-            Err(e) => log::error!("Failed to read from socket: {}", e),
-        }
+    #[allow(unused_variables)]
+    fn deserialize(data: Bytes) -> Self {
+        PingRequest
     }
 
-    pub async fn send_request(&self, request: Request, target_addr: SocketAddr) {
-        let stream = tokio::net::TcpStream::connect(target_addr).await;
-        match stream {
-            Ok(_) => log::debug!("Connected to [{}]", target_addr),
-            Err(e) => {
-                log::error!("Failed to connect to [{}]: {}", target_addr, e);
-                return;
-            }
-        }
-        let mut stream = stream.unwrap();
+    fn clone(&self) -> Self {
+        PingRequest
+    }
 
-        let message = request.get_serialized_message();
-        stream.write_all(&message).await.unwrap();
-        log::debug!("Sent request [{}] to [{}]", request.message, target_addr);
-
-        let mut buffer = Vec::new();
-        match stream.read_to_end(&mut buffer).await {
-            Ok(_) => {}
-            Err(e) => {
-                log::error!("Failed to read from socket: {}", e);
-                return;
-            }
-        }
-        let res = String::from_utf8(buffer).unwrap();
-        log::info!("Received response [{}] from [{}]", res, target_addr);
+    fn to_string(&self) -> String {
+        "PingRequest".to_string()
     }
 }
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#[derive(Clone)]
+pub struct PingResponse;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl RpcResponse for PingResponse {
+    fn serialize(&self) -> Bytes {
+        vec![0]
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    #[allow(unused_variables)]
+    fn deserialize(data: Bytes) -> Self {
+        PingResponse
+    }
+
+    fn clone(&self) -> Self {
+        PingResponse
+    }
+
+    fn to_string(&self) -> String {
+        "PingResponse".to_string()
     }
 }
+
+pub type PingService = Service<PingRequest, PingResponse>;
