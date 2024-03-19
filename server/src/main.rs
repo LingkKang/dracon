@@ -6,7 +6,7 @@ use logger::Logger;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -47,7 +47,10 @@ async fn main() {
     // let node = Node::new(SocketAddr::from(local_socket));
     // node.timeout();
 
-    let listener = tokio::net::TcpListener::bind(local_socket).await.unwrap();
+    let test_ip = Ipv4Addr::LOCALHOST;
+    let test_socket = SocketAddr::new(IpAddr::V4(test_ip), local_socket.port());
+
+    let listener = tokio::net::TcpListener::bind(test_socket).await.unwrap();
     log::debug!("Listening on {}", listener.local_addr().unwrap());
     tokio::spawn(async move {
         loop {
