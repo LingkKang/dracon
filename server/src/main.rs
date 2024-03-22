@@ -55,16 +55,19 @@ async fn main() {
     );
     let srv = service.clone();
 
-    let task = tokio::spawn(async move { srv.clone().handle_request().await });
+    let task = tokio::spawn(async move { srv.handle_request().await });
 
     let wait_time = 10;
     log::info!("Waiting for {wait_time} seconds to send pings to other nodes");
     tokio::time::sleep(tokio::time::Duration::from_secs(wait_time)).await;
 
     for socket in sockets {
+        log::trace!("Sending request to {:?}", socket);
         let srv = service.clone();
         tokio::spawn(async move { srv.send_request(socket).await });
     }
+
+    log::trace!("All requests sent and waiting for timeout...");
 
     // wait to make sure other spawned tasks are done.
     match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await

@@ -113,7 +113,14 @@ where
 
     /// Send a request to the service.
     pub async fn send_request(&self, target: SocketAddr) -> Result<Res> {
-        let mut stream = tokio::net::TcpStream::connect(target).await?;
+        let stream = tokio::net::TcpStream::connect(target).await;
+        let mut stream = match stream {
+            Ok(stream) => stream,
+            Err(e) => {
+                log::error!("Failed to connect to {}: {}", target, e);
+                return Err(e);
+            }
+        };
         log::trace!("Connected to {:?}", target);
 
         stream.write_all(&self.request.serialize()).await?;
