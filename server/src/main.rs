@@ -23,9 +23,15 @@ async fn main() {
     // The first argument is the local socket address.
     let local_socket = sockets.swap_remove(0);
 
+    // Initialize the logger with the local socket address as the prefix.
     Logger::new().set_prefix(local_socket.to_string()).init();
-
     log::info!("Machine started with socket: {}", local_socket);
+
+    // Convert the sockets into a hash set.
+    // 1. Duplicates will be removed if any.
+    // 2. The order of the sockets is not important.
+    let sockets: std::collections::HashSet<SocketAddr> =
+        std::collections::HashSet::from_iter(sockets);
 
     // The server should listen on the 0.0.0.0 address,
     // with the same port as the local socket.
