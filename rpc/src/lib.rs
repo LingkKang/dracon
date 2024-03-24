@@ -180,12 +180,15 @@ impl PingRequest {
 
 impl RpcRequest for PingRequest {
     fn serialize(&self) -> Bytes {
-        self.data.as_bytes().to_vec()
+        let mut data = self.data.as_bytes().to_vec();
+        data.push(b'\0'); // Add null byte at the end.
+        data
     }
 
     #[allow(unused_variables)]
     fn deserialize(data: Bytes) -> Self {
-        let data = data.to_vec();
+        let mut data = data.to_vec();
+        data.pop(); // Remove the null byte at the end.
         match String::from_utf8(data) {
             Ok(data) => {
                 let data = data.trim().to_string();
@@ -213,12 +216,15 @@ impl PingResponse {
 
 impl RpcResponse for PingResponse {
     fn serialize(&self) -> Bytes {
-        self.data.as_bytes().to_vec()
+        let mut data = self.data.as_bytes().to_vec();
+        data.push(b'\0'); // Add null byte at the end.
+        data
     }
 
     #[allow(unused_variables)]
     fn deserialize(data: Bytes) -> Self {
-        let data = data.to_vec();
+        let mut data = data.to_vec();
+        data.pop(); // Remove the null byte at the end.
         match String::from_utf8(data) {
             Ok(data) => {
                 let data = data.trim().to_string();

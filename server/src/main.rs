@@ -51,13 +51,13 @@ async fn main() {
     let service = rpc::Service::new(
         test_socket,
         rpc::PingRequest::new("Ping".to_string()),
-        rpc::PingResponse::new("Pong\n".to_string()),
+        rpc::PingResponse::new("Pong".to_string()),
     );
     let srv = service.clone();
 
     let _task = tokio::spawn(async move { srv.handle_request().await });
 
-    let wait_time = 10;
+    let wait_time = 1;
     log::info!("Waiting for {wait_time} seconds to send pings to other nodes");
     tokio::time::sleep(tokio::time::Duration::from_secs(wait_time)).await;
 
