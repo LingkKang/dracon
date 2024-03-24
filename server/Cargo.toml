@@ -7,4 +7,5 @@ edition = "2021"
 log = { version = "0.4.21", features = ["std"] }
 logger = { path = "../logger" }
 raft = { path = "../raft" }
+rpc = { path = "../rpc" }
 tokio = { version = "1.36.0", features = ["rt", "net"] }
