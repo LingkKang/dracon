@@ -94,6 +94,12 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! The binary target of dracon.
 //!
 //! Local libraries used here are [`logger`], [`raft`] and [`rpc`].
@@ -119,9 +125,15 @@
     <span class="comment">// The first argument is the local socket address.
     </span><span class="kw">let </span>local_socket = sockets.swap_remove(<span class="number">0</span>);
 
-    Logger::new().set_prefix(local_socket.to_string()).init();
-
+    <span class="comment">// Initialize the logger with the local socket address as the prefix.
+    </span>Logger::new().set_prefix(local_socket.to_string()).init();
     <span class="macro">log::info!</span>(<span class="string">"Machine started with socket: {}"</span>, local_socket);
+
+    <span class="comment">// Convert the sockets into a hash set.
+    // 1. Duplicates will be removed if any.
+    // 2. The order of the sockets is not important.
+    </span><span class="kw">let </span>sockets: std::collections::HashSet&lt;SocketAddr&gt; =
+        std::collections::HashSet::from_iter(sockets);
 
     <span class="comment">// The server should listen on the 0.0.0.0 address,
     // with the same port as the local socket.
