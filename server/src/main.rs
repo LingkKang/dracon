@@ -1,6 +1,8 @@
 //! The binary target of dracon.
 //!
 //! Local libraries used here are [`logger`], [`raft`] and [`rpc`].
+//!
+//! For the configuration file formatting, see [`read_config()`] function.
 
 use logger::Logger;
 
@@ -25,9 +27,6 @@ async fn main() {
 
     log::info!("Machine started with socket: {}", local_socket);
 
-    // let node = Node::new(SocketAddr::from(local_socket));
-    // node.timeout();
-
     // The server should listen on the 0.0.0.0 address,
     // with the same port as the local socket.
     // NOT 127.0.0.1 or LOCALHOST.
@@ -39,8 +38,8 @@ async fn main() {
         rpc::PingRequest::new("Ping".to_string()),
         rpc::PingResponse::new("Pong".to_string()),
     );
-    let srv = service.clone();
 
+    let srv = service.clone();
     let task = tokio::spawn(async move { srv.handle_request().await });
 
     let wait_time = 10;
@@ -48,12 +47,9 @@ async fn main() {
     tokio::time::sleep(tokio::time::Duration::from_secs(wait_time)).await;
 
     for socket in sockets {
-        log::trace!("Sending request to {:?}", socket);
         let srv = service.clone();
         tokio::spawn(async move { srv.send_request(socket).await });
     }
-
-    log::trace!("All requests sent and waiting for timeout...");
 
     // wait to make sure other spawned tasks are done.
     match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await
@@ -77,6 +73,8 @@ async fn main() {
 /// 172.19.0.4:16
 ///
 /// ```
+///
+/// Note that the first line denoted as the local socket address.
 fn read_config<P>(path: P) -> std::io::Result<Vec<SocketAddr>>
 where
     P: AsRef<std::path::Path>,

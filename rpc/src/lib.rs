@@ -112,6 +112,9 @@ where
     }
 
     /// Send a request to the service.
+    /// As sending a request is the main purpose,
+    /// log output of sending is at [`log::info!`] level,
+    /// whereas receiving is at [`log::debug!`] level.
     pub async fn send_request(&self, target: SocketAddr) -> Result<Res> {
         let stream = tokio::net::TcpStream::connect(target).await;
         let mut stream = match stream {
@@ -124,16 +127,12 @@ where
         log::trace!("Connected to {:?}", target);
 
         stream.write_all(&self.request.serialize()).await?;
-        log::debug!(
-            "Sent request [{}] to {}",
-            self.request.to_string(),
-            target
-        );
+        log::info!("Sent request [{}] to {}", self.request.to_string(), target);
 
         let mut buffer: Bytes = vec![0; 1024];
         let n = stream.read(&mut buffer).await?;
         let response = Res::deserialize(buffer[..n].to_vec());
-        log::info!(
+        log::debug!(
             "Received response [{}] from {}",
             response.to_string(),
             target
@@ -142,6 +141,10 @@ where
         Ok(response)
     }
 
+    /// Handle all the requests to the service.
+    /// As handling requests is the main purpose,
+    /// log output of receiving is at [`log::info!`] level,
+    /// whereas sending is at [`log::debug!`] level.
     pub async fn handle_request(&self) -> Result<()> {
         let listener: tokio::net::TcpListener =
             tokio::net::TcpListener::bind(self.socket).await?;
@@ -154,7 +157,7 @@ where
             let mut buffer: Bytes = vec![0; 1024];
             let n = stream.read(&mut buffer).await?;
             let request = Req::deserialize(buffer[..n].to_vec());
-            log::debug!(
+            log::info!(
                 "Received request [{}] from {}",
                 request.to_string(),
                 addr
@@ -162,7 +165,7 @@ where
 
             let response_msg = self.response.to_string();
             stream.write_all(&self.response.serialize()).await?;
-            log::info!("Sent response [{}] to {}", response_msg, addr);
+            log::debug!("Sent response [{}] to {}", response_msg, addr);
         }
     }
 }
@@ -185,7 +188,6 @@ impl RpcRequest for PingRequest {
         data
     }
 
-    #[allow(unused_variables)]
     fn deserialize(data: Bytes) -> Self {
         let mut data = data.to_vec();
         data.pop(); // Remove the null byte at the end.
@@ -221,7 +223,6 @@ impl RpcResponse for PingResponse {
         data
     }
 
-    #[allow(unused_variables)]
     fn deserialize(data: Bytes) -> Self {
         let mut data = data.to_vec();
         data.pop(); // Remove the null byte at the end.
