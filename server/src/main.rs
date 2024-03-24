@@ -51,11 +51,11 @@ async fn main() {
     let service = rpc::Service::new(
         test_socket,
         rpc::PingRequest::new("Ping".to_string()),
-        rpc::PingResponse::new("Pong".to_string()),
+        rpc::PingResponse::new("Pong\n".to_string()),
     );
     let srv = service.clone();
 
-    let task = tokio::spawn(async move { srv.handle_request().await });
+    let _task = tokio::spawn(async move { srv.handle_request().await });
 
     let wait_time = 10;
     log::info!("Waiting for {wait_time} seconds to send pings to other nodes");
@@ -70,13 +70,17 @@ async fn main() {
     log::trace!("All requests sent and waiting for timeout...");
 
     // wait to make sure other spawned tasks are done.
-    match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await
-    {
-        Ok(Ok(_)) => log::debug!("Task completed"),
-        Ok(Err(e)) => log::error!("Task failed due to error: {:?}", e),
-        Err(e) => log::info!("Task closed due to timeout: {:?}", e),
+    // match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await
+    // {
+    //     Ok(Ok(_)) => log::debug!("Task completed"),
+    //     Ok(Err(e)) => log::error!("Task failed due to error: {:?}", e),
+    //     Err(e) => log::info!("Task closed due to timeout: {:?}", e),
+    // }
+    // std::process::exit(0);
+    loop {
+        tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+        log::debug!("Looping...");
     }
-    std::process::exit(0);
 }
 
 /// Read the configuration file and return a set of sockets.
