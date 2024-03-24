@@ -1,5 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `server/src/main.rs`."><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="server" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
-    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `server/src/main.rs`."><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="server" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.0 (aedd173a2 2024-03-17)" data-channel="1.77.0" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../server/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -93,142 +94,66 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
-<a href="#146" id="146">146</a>
-<a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! The binary target of dracon.
 //!
 //! Local libraries used here are [`logger`], [`raft`] and [`rpc`].
+//!
+//! For the configuration file formatting, see [`read_config()`] function.
 
 </span><span class="kw">use </span>logger::Logger;
 
-<span class="kw">use </span>tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-<span class="kw">use </span>std::net::SocketAddr;
+<span class="kw">use </span>std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 <span class="attr">#[tokio::main(flavor = <span class="string">"current_thread"</span>)]
 </span><span class="kw">async fn </span>main() {
-    <span class="kw">let </span>input_socket =
-        std::env::args().nth(<span class="number">1</span>).expect(<span class="string">"No command argument provided"</span>);
-    Logger::new().set_prefix(input_socket).init();
-
-    <span class="attr">#[rustfmt::skip]
-    </span><span class="comment">// The initial pool of sockets for all starting nodes.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>sockets = read_config(<span class="string">"./tmp/config.txt"</span>).unwrap();
-
-    <span class="kw">let </span><span class="kw-2">mut </span>local_socket: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt; = <span class="prelude-val">None</span>;
-
-    <span class="kw">let </span>args: Vec&lt;String&gt; = std::env::args().collect();
-
-    <span class="macro">log::debug!</span>(<span class="string">"Arguments: {:?}"</span>, args);
-    <span class="macro">log::debug!</span>(<span class="string">"Config: {:?}"</span>, sockets);
-
-    <span class="comment">// Remove local socket from the sockets pool.
-    </span><span class="kw">for </span>arg <span class="kw">in </span>args {
-        <span class="kw">let </span>current_socket = arg.parse::&lt;SocketAddr&gt;();
-        <span class="kw">if </span>current_socket.is_ok() {
-            <span class="kw">let </span>current_socket = current_socket.unwrap();
-            <span class="kw">if </span>sockets.contains(<span class="kw-2">&amp;</span>current_socket) {
-                sockets.remove(<span class="kw-2">&amp;</span>current_socket);
-                local_socket = <span class="prelude-val">Some</span>(current_socket);
-            }
+    <span class="comment">// The initial pool of sockets for all starting nodes.
+    </span><span class="kw">let </span>sockets = read_config(<span class="string">"./tmp/config.txt"</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>sockets = <span class="kw">match </span>sockets {
+        <span class="prelude-val">Ok</span>(sockets) =&gt; sockets,
+        <span class="prelude-val">Err</span>(e) =&gt; {
+            <span class="macro">println!</span>(<span class="string">"Error reading config file: {:?}"</span>, e);
+            std::process::exit(<span class="number">1</span>);
         }
-    }
+    };
 
-    <span class="kw">let </span>local_socket = local_socket.unwrap_or_else(|| {
-        <span class="macro">log::error!</span>(<span class="string">"No socket address provided"</span>);
-        std::process::exit(<span class="number">0</span>);
-    });
+    <span class="comment">// The first argument is the local socket address.
+    </span><span class="kw">let </span>local_socket = sockets.swap_remove(<span class="number">0</span>);
+
+    Logger::new().set_prefix(local_socket.to_string()).init();
 
     <span class="macro">log::info!</span>(<span class="string">"Machine started with socket: {}"</span>, local_socket);
 
-    <span class="comment">// let node = Node::new(SocketAddr::from(local_socket));
-    // node.timeout();
+    <span class="comment">// The server should listen on the 0.0.0.0 address,
+    // with the same port as the local socket.
+    // NOT 127.0.0.1 or LOCALHOST.
+    </span><span class="kw">let </span>listen_socket =
+        SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), local_socket.port());
 
-    </span><span class="kw">let </span>listener = tokio::net::TcpListener::bind(local_socket).<span class="kw">await</span>.unwrap();
-    <span class="macro">log::debug!</span>(<span class="string">"Listening on {}"</span>, listener.local_addr().unwrap());
-    tokio::spawn(<span class="kw">async move </span>{
-        <span class="kw">loop </span>{
-            <span class="kw">let </span>(coming_stream, coming_socket) =
-                listener.accept().<span class="kw">await</span>.unwrap();
-            tokio::spawn(handle_ping(coming_stream, coming_socket));
-        }
-    });
+    <span class="kw">let </span>service = rpc::Service::new(
+        listen_socket,
+        rpc::PingRequest::new(<span class="string">"Ping"</span>.to_string()),
+        rpc::PingResponse::new(<span class="string">"Pong"</span>.to_string()),
+    );
 
-    <span class="kw">let </span>wait_time = <span class="number">2</span>;
+    <span class="kw">let </span>srv = service.clone();
+    <span class="kw">let </span>task = tokio::spawn(<span class="kw">async move </span>{ srv.handle_request().<span class="kw">await </span>});
+
+    <span class="kw">let </span>wait_time = <span class="number">10</span>;
     <span class="macro">log::info!</span>(<span class="string">"Waiting for {wait_time} seconds to send pings to other nodes"</span>);
     tokio::time::sleep(tokio::time::Duration::from_secs(wait_time)).<span class="kw">await</span>;
 
     <span class="kw">for </span>socket <span class="kw">in </span>sockets {
-        <span class="comment">// Send pings to other nodes.
-        </span>tokio::spawn(send_ping(socket));
+        <span class="kw">let </span>srv = service.clone();
+        tokio::spawn(<span class="kw">async move </span>{ srv.send_request(socket).<span class="kw">await </span>});
     }
 
     <span class="comment">// wait to make sure other spawned tasks are done.
-    </span>tokio::time::sleep(tokio::time::Duration::from_secs(<span class="number">15</span>)).<span class="kw">await</span>;
+    </span><span class="kw">match </span>tokio::time::timeout(tokio::time::Duration::from_secs(<span class="number">30</span>), task).<span class="kw">await
+    </span>{
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="kw">_</span>)) =&gt; <span class="macro">log::debug!</span>(<span class="string">"Task completed"</span>),
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(e)) =&gt; <span class="macro">log::error!</span>(<span class="string">"Task failed due to error: {:?}"</span>, e),
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">log::info!</span>(<span class="string">"Task closed due to timeout: {:?}"</span>, e),
+    }
     std::process::exit(<span class="number">0</span>);
 }
 
@@ -244,79 +169,23 @@
 /// 172.19.0.4:16
 ///
 /// ```
-</span><span class="kw">fn </span>read_config&lt;P&gt;(
-    path: P,
-) -&gt; std::io::Result&lt;std::collections::HashSet&lt;SocketAddr&gt;&gt;
+///
+/// Note that the first line denoted as the local socket address.
+</span><span class="kw">fn </span>read_config&lt;P&gt;(path: P) -&gt; std::io::Result&lt;Vec&lt;SocketAddr&gt;&gt;
 <span class="kw">where
     </span>P: AsRef&lt;std::path::Path&gt;,
 {
     <span class="kw">let </span>file = std::fs::File::open(path)<span class="question-mark">?</span>;
     <span class="kw">let </span>reader = std::io::BufReader::new(file);
-    <span class="kw">let </span><span class="kw-2">mut </span>sockets = std::collections::HashSet::new();
+    <span class="kw">let </span><span class="kw-2">mut </span>sockets = Vec::new();
     <span class="kw">for </span>line <span class="kw">in </span>std::io::BufRead::lines(reader) {
         <span class="kw">let </span>line = line<span class="question-mark">?</span>;
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(socket) = line.parse::&lt;SocketAddr&gt;() {
-            sockets.insert(socket);
+            sockets.push(socket);
         }
     }
+    <span class="kw">let </span>len = sockets.len();
+    <span class="macro">assert!</span>(len &gt;= <span class="number">3</span>, <span class="string">"Need at least 3 nodes to start, found {} nodes"</span>, len);
     <span class="prelude-val">Ok</span>(sockets)
-}
-
-<span class="kw">async fn </span>handle_ping(<span class="kw-2">mut </span>stream: tokio::net::TcpStream, socket: SocketAddr) {
-    <span class="macro">log::debug!</span>(<span class="string">"New connection from {}"</span>, socket);
-    <span class="kw">let </span><span class="kw-2">mut </span>buffer = [<span class="number">0</span>; <span class="number">64</span>];
-    <span class="kw">loop </span>{
-        <span class="kw">let </span>n = <span class="kw">match </span>stream.read(<span class="kw-2">&amp;mut </span>buffer).<span class="kw">await </span>{
-            <span class="prelude-val">Ok</span>(<span class="number">0</span>) =&gt; {
-                <span class="macro">log::debug!</span>(<span class="string">"Connection closed"</span>);
-                <span class="kw">break</span>;
-            }
-            <span class="prelude-val">Ok</span>(n) =&gt; n,
-            <span class="prelude-val">Err</span>(e) =&gt; {
-                <span class="macro">log::error!</span>(<span class="string">"Failed to read from socket; err = {:?}"</span>, e);
-                <span class="kw">break</span>;
-            }
-        };
-
-        <span class="kw">let </span>message = String::from_utf8_lossy(<span class="kw-2">&amp;</span>buffer[..n]);
-        <span class="kw">let </span>message = message.trim(); <span class="comment">// Remove the trailing newline.
-        </span><span class="macro">log::info!</span>(<span class="string">"Received '{}' from {}"</span>, message, socket);
-
-        <span class="comment">// Respond to the ping.
-        </span><span class="kw">if </span>message == <span class="string">"ping" </span>{
-            <span class="kw">let </span>response = <span class="string">b"pong"</span>;
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = stream.write_all(response).<span class="kw">await </span>{
-                <span class="macro">log::error!</span>(<span class="string">"Failed to write to socket; err = {:?}"</span>, e);
-                <span class="kw">break</span>;
-            }
-        }
-    }
-}
-
-<span class="kw">async fn </span>send_ping(socket: SocketAddr) {
-    <span class="macro">log::debug!</span>(<span class="string">"Sending ping to {}"</span>, socket);
-    <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>stream) = tokio::net::TcpStream::connect(<span class="kw-2">&amp;</span>socket).<span class="kw">await </span>{
-        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = stream.write_all(<span class="string">b"ping\n"</span>).<span class="kw">await </span>{
-            <span class="macro">log::error!</span>(<span class="string">"Failed to write to socket; err = {:?}"</span>, e);
-        }
-        <span class="kw">let </span><span class="kw-2">mut </span>buffer = [<span class="number">0</span>; <span class="number">64</span>];
-        <span class="kw">match </span>stream.read(<span class="kw-2">&amp;mut </span>buffer).<span class="kw">await </span>{
-            <span class="prelude-val">Ok</span>(<span class="number">0</span>) =&gt; {
-                <span class="macro">log::debug!</span>(<span class="string">"Connection closed"</span>);
-            }
-            <span class="prelude-val">Ok</span>(n) =&gt; {
-                <span class="kw">let </span>message = String::from_utf8_lossy(<span class="kw-2">&amp;</span>buffer[..n]);
-                <span class="kw">let </span>message = message.trim(); <span class="comment">// Remove the trailing newline.
-                </span><span class="macro">log::info!</span>(<span class="string">"Received '{}' from {}"</span>, message, socket);
-            }
-            <span class="prelude-val">Err</span>(e) =&gt; {
-                <span class="macro">log::error!</span>(<span class="string">"Failed to read from socket; err = {:?}"</span>, e);
-            }
-        }
-        <span class="comment">// Close the connection.
-        </span>drop(stream);
-    } <span class="kw">else </span>{
-        <span class="macro">log::error!</span>(<span class="string">"Failed to connect to {}"</span>, socket);
-    }
 }
 </code></pre></div></section></main></body></html>
