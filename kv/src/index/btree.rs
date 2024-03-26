@@ -22,6 +22,12 @@ impl BTree {
     }
 }
 
+impl Default for BTree {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Indexer for BTree {
     fn put(&self, key: Vec<u8>, pos: EntryPos) -> bool {
         let write_guard = self.tree.write();
