@@ -5,13 +5,14 @@ edition = "2021"
 authors = ["Lingkang <contact@lingkang.dev>"]
 
 [workspace]
-members = ["logger", "raft", "rpc", "server"]
+members = ["kv", "logger", "raft", "rpc", "server"]
 
 [[bin]]
 name = "server"
 path = "server/src/main.rs"
 
 [dependencies]
+kv = { path = "kv" }
 log = "0.4.21"
 logger = { path = "logger" }
 raft = { path = "raft" }

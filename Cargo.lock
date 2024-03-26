@@ -111,6 +111,7 @@ checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 name = "dracon"
 version = "0.1.0"
 dependencies = [
+ "kv",
  "log",
  "logger",
  "raft",
@@ -166,6 +167,10 @@ checksum = "406cda4b368d531c842222cf9d2600a9a4acce8d29423695379c6868a143a9ee"
 dependencies = [
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "kv"
+version = "0.1.0"
 
 [[package]]
 name = "lazy_static"
