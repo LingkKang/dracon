@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Logger"]};
+window.SIDEBAR_ITEMS = {"fn":["colorize_level_string"],"mod":["time"],"struct":["Logger"]};
