@@ -1,13 +1,11 @@
-use super::Indexer;
-
 use crate::entry::EntryPos;
 
-/// A wrapper over [`std::collections::BTreeMap`], which is a simple in-memory BTree.
+use std::collections::BTreeMap;
+
+/// A wrapper over [`BTreeMap`], which is a simple in-memory BTree.
 /// Inside the BTree, it stores the key and the position of the entry.
 pub struct BTree {
-    tree: std::sync::Arc<
-        std::sync::RwLock<std::collections::BTreeMap<Vec<u8>, EntryPos>>,
-    >,
+    tree: std::sync::Arc<std::sync::RwLock<BTreeMap<Vec<u8>, EntryPos>>>,
 }
 
 impl BTree {
@@ -15,9 +13,7 @@ impl BTree {
     #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
-            tree: std::sync::Arc::new(std::sync::RwLock::new(
-                std::collections::BTreeMap::new(),
-            )),
+            tree: std::sync::Arc::new(std::sync::RwLock::new(BTreeMap::new())),
         }
     }
 }
@@ -28,7 +24,7 @@ impl Default for BTree {
     }
 }
 
-impl Indexer for BTree {
+impl super::Indexer for BTree {
     fn put(&self, key: Vec<u8>, pos: EntryPos) -> bool {
         let write_guard = self.tree.write();
         let mut write_guard = match write_guard {
@@ -63,6 +59,7 @@ impl Indexer for BTree {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::index::Indexer;
 
     #[test]
     fn test_btree_put() {
