@@ -27,7 +27,6 @@ jobs:
           git fetch origin main:main
           git merge main --allow-unrelated-histories -X theirs
           git commit --amend -m ":twisted_rightwards_arrows: Merge branch \`main\` into \`doc\`"
-          git push -f https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git doc
 
       - name: Update and Clean up
         run: |
@@ -38,7 +37,10 @@ jobs:
 
       - name: Generate Rustdoc
         run: |
-          cargo doc --document-private-items
+          cargo doc --package logger --no-deps --document-private-items
+          cargo doc --package raft --no-deps --document-private-items
+          cargo doc --package rpc --no-deps --document-private-items
+          cargo doc --no-deps --document-private-items
           echo '<meta http-equiv="refresh" content="0; url=server/index.html">' > ./target/doc/index.html
 
       - name: Add and Commit Rustdoc
@@ -47,6 +49,6 @@ jobs:
           git add ./docs
           if [[ -n $(git status -s) ]]; then
             git commit -m ":memo: $(date --utc "+%Y-%m-%d %H:%M:%S.%2N")"
-            git push -f https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git doc
           fi
+          git push -f https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git doc
         shell: bash
