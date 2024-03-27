@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Lingkang <contact@lingkang.dev>"]
 
 [workspace]
-members = ["logger", "raft", "rpc", "server"]
+members = ["logger", "raft", "rpc"]
 
 [[bin]]
 name = "server"
