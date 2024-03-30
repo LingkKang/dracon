@@ -5,8 +5,9 @@
 //! For the configuration file formatting, see [`read_config()`] function.
 
 use logger::Logger;
+use raft::node::Node;
 
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::SocketAddr;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -33,37 +34,12 @@ async fn main() {
     let sockets: std::collections::HashSet<SocketAddr> =
         std::collections::HashSet::from_iter(sockets);
 
-    // The server should listen on the 0.0.0.0 address,
-    // with the same port as the local socket.
-    // NOT 127.0.0.1 or LOCALHOST.
-    let listen_socket =
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), local_socket.port());
+    let mut node = Node::new(local_socket);
+    node.append_peers(sockets);
 
-    let service = rpc::Service::new(
-        listen_socket,
-        rpc::PingRequest::new("Ping".to_string()),
-        rpc::PingResponse::new("Pong".to_string()),
-    );
+    node.start().await;
 
-    let srv = service.clone();
-    let task = tokio::spawn(async move { srv.handle_request().await });
-
-    let wait_time = 10;
-    log::info!("Waiting for {wait_time} seconds to send pings to other nodes");
-    tokio::time::sleep(tokio::time::Duration::from_secs(wait_time)).await;
-
-    for socket in sockets {
-        let srv = service.clone();
-        tokio::spawn(async move { srv.send_request(socket).await });
-    }
-
-    // wait to make sure other spawned tasks are done.
-    match tokio::time::timeout(tokio::time::Duration::from_secs(30), task).await
-    {
-        Ok(Ok(_)) => log::debug!("Task completed"),
-        Ok(Err(e)) => log::error!("Task failed due to error: {:?}", e),
-        Err(e) => log::info!("Task closed due to timeout: {:?}", e),
-    }
+    log::info!("Exiting");
     std::process::exit(0);
 }
 

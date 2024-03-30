@@ -1,5 +1,6 @@
 //! In Raft, each server is represented as a node [`Node`].
 
+use std::collections::HashSet;
 use std::net::SocketAddr;
 
 use rand::Rng;
@@ -24,18 +25,22 @@ pub struct Node {
     /// Election timeout in milliseconds.
     /// Typically 150 - 300 ms.
     election_timeout: u16,
+
+    /// The list of peers in the cluster.
+    /// Use [`HashSet`] to avoid duplicates.
+    peers: HashSet<SocketAddr>,
 }
 
 impl Node {
     /// Create a new node with [`Status::Follower`] status.
     pub fn new(socket_addr: SocketAddr) -> Self {
-        log::debug!("Creating Node with IP: {}", socket_addr);
-        let mut rng = rand::thread_rng();
+        log::debug!("Node created");
         Node {
             status: Status::Follower,
             current_term: 0,
             socket_addr,
-            election_timeout: rng.gen_range(150..=300),
+            election_timeout: crate::next_timeout(),
+            peers: HashSet::new(),
         }
     }
 
@@ -59,16 +64,39 @@ impl Node {
         self.status.is_leader()
     }
 
-    pub fn timeout(&self) {
-        log::debug!(
-            "Initial election timeout for Node: {} in {} ms.",
-            self.socket_addr,
-            self.election_timeout
-        );
-        std::thread::sleep(std::time::Duration::from_millis(
-            self.election_timeout as u64,
-        ));
-        log::trace!("Node: {} timed out.", self.socket_addr);
+    pub fn refresh_timeout(&mut self) {
+        self.election_timeout = crate::next_timeout();
+    }
+
+    /// Append a list of peers to the node.
+    pub fn append_peers(&mut self, new_peers: HashSet<SocketAddr>) {
+        self.peers.extend(new_peers);
+    }
+
+    pub async fn start(&mut self) {
+        log::info!("Node started");
+        self.initial_election().await;
+    }
+
+    /// Initial election.
+    async fn initial_election(&mut self) {
+        self.status = Status::Candidate;
+        self.current_term += 1;
+
+        let (canceller, handle) = crate::timeout(self.election_timeout).await;
+
+        if rand::thread_rng().gen_bool(0.5) {
+            canceller.send(()).unwrap();
+            log::debug!("Should cancel timeout");
+        } else {
+            log::debug!("Should not cancel timeout");
+        }
+        handle.await.unwrap();
+        self.refresh_timeout();
+
+        if self.status == Status::Candidate {
+            self.status = Status::Follower;
+        }
     }
 }
 
@@ -127,5 +155,22 @@ mod tests {
 
         let candidate = Status::Candidate;
         assert!(!candidate.is_leader());
+    }
+
+    #[test]
+    fn test_peers() {
+        let node = Node::new(LOCAL_ADDR.parse().unwrap());
+        assert!(node.peers.is_empty());
+    }
+
+    #[test]
+    fn test_append_peers() {
+        let mut node = Node::new(LOCAL_ADDR.parse().unwrap());
+        let peers: HashSet<SocketAddr> = HashSet::from(
+            ["127.0.0.2:16", "127.0.0.3:16", "127.0.0.4:16", "127.0.0.5:16"]
+                .map(|socket| socket.parse().unwrap()),
+        );
+        node.append_peers(peers.clone());
+        assert_eq!(node.peers, peers);
     }
 }
