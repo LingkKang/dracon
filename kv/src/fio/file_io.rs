@@ -12,7 +12,7 @@ pub struct FileIo {
 }
 
 impl FileIo {
-    pub fn new(file_name: std::path::PathBuf) -> Result<Self> {
+    pub fn new(file_name: &std::path::Path) -> Result<Self> {
         match std::fs::OpenOptions::new()
             .create(true)
             .read(true)
@@ -34,8 +34,7 @@ impl FileIo {
 }
 
 impl IoManager for FileIo {
-    #[allow(unused_variables)]
-    fn read(&self, buf: &mut [u8], offset: usize) -> Result<usize> {
+    fn read(&self, buf: &mut [u8], offset: u64) -> Result<u64> {
         // Acquire a read lock on the file.
         let read_guard = self.file.read();
         let read_guard = match read_guard {
@@ -66,7 +65,7 @@ impl IoManager for FileIo {
 
         // Seek to the offset.
         file_inst
-            .seek(std::io::SeekFrom::Start(offset as u64))
+            .seek(std::io::SeekFrom::Start(offset))
             .map_err(|e| {
                 log::error!("Failed to seek in file: {}", e);
                 Err {
@@ -85,10 +84,10 @@ impl IoManager for FileIo {
             })
             .unwrap();
 
-        Ok(read_bytes)
+        Ok(read_bytes as u64)
     }
 
-    fn write(&self, buf: &[u8]) -> Result<usize> {
+    fn write(&self, buf: &[u8]) -> Result<u64> {
         // Acquire a write lock on the file.
         let write_guard = self.file.write();
         let mut write_guard = match write_guard {
@@ -105,7 +104,7 @@ impl IoManager for FileIo {
 
         // Write data to the file.
         match write_guard.write(buf) {
-            Ok(size) => Ok(size),
+            Ok(size) => Ok(size as u64),
             Err(e) => {
                 log::error!("Failed to write file: {}", e);
                 Err(Err {
@@ -116,9 +115,9 @@ impl IoManager for FileIo {
         }
     }
 
+    /// Sync the file to disk.
+    /// Basically a wrapper around [`std::fs::File::sync_all()`].
     fn sync(&self) -> Result<()> {
-        // Basically a wrapper around `File::sync_all()`.
-
         // Acquire a read lock on the file.
         let read_guard = self.file.read();
         let read_guard = match read_guard {
@@ -156,16 +155,16 @@ mod tests {
         ($data: expr, $fio: expr) => {
             let result = $fio.write($data.clone().as_bytes());
             assert!(result.is_ok());
-            assert_eq!(result.unwrap(), $data.len());
+            assert_eq!(result.unwrap(), $data.len() as u64);
         };
     }
 
     #[test]
     fn test_file_io_write() {
-        let file_path = std::path::PathBuf::from("./test_write.data");
+        let file_path = std::path::Path::new("./test_write.data");
 
         // Create a file io instance
-        let fio = FileIo::new(file_path.clone());
+        let fio = FileIo::new(file_path);
         assert!(fio.is_ok());
         let fio = fio.unwrap();
 
@@ -187,11 +186,13 @@ mod tests {
             buf.resize($len, 0);
             let result = $fio.read(&mut buf, $offset);
             assert!(result.is_ok());
-            assert_eq!(result.unwrap(), $len);
-            // Print the read data in decimal.
-            println!("buf: {:?}", buf);
-            // Print the read data in string.
-            println!("val: {:?}", std::str::from_utf8(&buf).unwrap());
+            assert_eq!(result.unwrap(), $len as u64);
+            // Print the read data in decimal and in string.
+            println!(
+                "buf: {:?}\nval: {:?}\n",
+                buf,
+                std::str::from_utf8(&buf).unwrap()
+            );
         };
     }
 
@@ -201,8 +202,8 @@ mod tests {
         // so make sure that the file is written well before reading.
 
         // Initialize a file io instance.
-        let file_path = std::path::PathBuf::from("./test_read.data");
-        let fio = FileIo::new(file_path.clone());
+        let file_path = std::path::Path::new("./test_read.data");
+        let fio = FileIo::new(file_path);
         assert!(fio.is_ok());
         let fio = fio.unwrap();
 
@@ -223,14 +224,14 @@ mod tests {
         // Read data from the file in random order.
         // Record the offsets of each key.
         let mut offsets = Vec::new();
-        let mut offset: usize = 0;
+        let mut offset: u64 = 0;
         for key in keys.iter() {
             offsets.push(offset);
-            offset += key.len();
+            offset += key.len() as u64;
         }
 
         // Save the keys and offsets in pairs.
-        let mut pairs: Vec<(&str, usize)> =
+        let mut pairs: Vec<(&str, u64)> =
             keys.iter().zip(offsets.iter()).map(|(&s, &i)| (s, i)).collect();
 
         // Shuffle the key-offset pairs.
@@ -250,10 +251,10 @@ mod tests {
 
     #[test]
     fn test_file_io_sync() {
-        let file_path = std::path::PathBuf::from("./test_sync.data");
+        let file_path = std::path::Path::new("./test_sync.data");
 
         // Create a file io instance
-        let fio = FileIo::new(file_path.clone());
+        let fio = FileIo::new(file_path);
         assert!(fio.is_ok());
         let fio = fio.unwrap();
 

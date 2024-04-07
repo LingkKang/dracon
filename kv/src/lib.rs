@@ -4,7 +4,9 @@
 //! https://riak.com/assets/bitcask-intro.pdf)
 //! by **Justin Sheehy** and **David Smith** for more details.
 
-pub mod entry;
-pub mod err;
-pub mod fio;
-pub mod index;
+mod entry;
+mod err;
+mod fio;
+mod index;
+
+pub mod db;
