@@ -51,6 +51,7 @@ impl IoManager for FileIo {
         };
 
         // Clone the file instance to read data.
+        // TODO: Do I really need to clone the file descriptor?
         let mut file_inst = read_guard
             .try_clone()
             .map_err(|e| {
@@ -116,6 +117,7 @@ impl IoManager for FileIo {
     }
 
     fn sync(&self) -> Result<()> {
+        // TODO: Implement this method.
         todo!()
     }
 }
@@ -212,6 +214,7 @@ mod tests {
         pairs.shuffle(&mut rand::thread_rng());
 
         // Read data from the file in random order.
+        // TODO: Test parallel reading.
         for (key, offset) in pairs.iter() {
             read_data_and_assert!(key.len(), *offset, fio);
         }
