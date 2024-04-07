@@ -41,4 +41,4 @@ jobs:
       - uses: actions/checkout@main
 
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets --all-features --workspace -- -D warnings
