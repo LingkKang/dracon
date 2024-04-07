@@ -117,8 +117,32 @@ impl IoManager for FileIo {
     }
 
     fn sync(&self) -> Result<()> {
-        // TODO: Implement this method.
-        todo!()
+        // Basically a wrapper around `File::sync_all()`.
+
+        // Acquire a read lock on the file.
+        let read_guard = self.file.read();
+        let read_guard = match read_guard {
+            Ok(guard) => guard,
+            Err(e) => {
+                log::error!("Failed to acquire read lock on file: {}", e);
+                return Err(Err {
+                    code: ErrCode::SyncDataFileFailed,
+                    msg: "Failed to acquire read lock ".to_owned()
+                        + &e.to_string(),
+                });
+            }
+        };
+
+        // Sync the file.
+        if let Err(e) = read_guard.sync_all() {
+            log::error!("Failed to sync file: {}", e);
+            return Err(Err {
+                code: ErrCode::SyncDataFileFailed,
+                msg: e.to_string(),
+            });
+        }
+
+        Ok(())
     }
 }
 
@@ -218,6 +242,30 @@ mod tests {
         for (key, offset) in pairs.iter() {
             read_data_and_assert!(key.len(), *offset, fio);
         }
+
+        // Clean up
+        let del = std::fs::remove_file(file_path);
+        assert!(del.is_ok());
+    }
+
+    #[test]
+    fn test_file_io_sync() {
+        let file_path = std::path::PathBuf::from("./test_sync.data");
+
+        // Create a file io instance
+        let fio = FileIo::new(file_path.clone());
+        assert!(fio.is_ok());
+        let fio = fio.unwrap();
+
+        let key1 = "key1";
+        write_data_and_assert!(key1, fio);
+
+        let key2 = "key_abcd";
+        write_data_and_assert!(key2, fio);
+
+        // Sync the file.
+        let result = fio.sync();
+        assert!(result.is_ok());
 
         // Clean up
         let del = std::fs::remove_file(file_path);

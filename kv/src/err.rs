@@ -1,6 +1,7 @@
 pub enum ErrCode {
     OpenDataFileFailed,
     ReadDataFileFailed,
+    SyncDataFileFailed,
     WriteDataFileFailed,
 }
 
@@ -12,6 +13,9 @@ impl std::fmt::Debug for ErrCode {
             }
             ErrCode::ReadDataFileFailed => {
                 write!(f, "Failed to read data file")
+            }
+            ErrCode::SyncDataFileFailed => {
+                write!(f, "Failed to sync data file")
             }
             ErrCode::WriteDataFileFailed => {
                 write!(f, "Failed to write file")
