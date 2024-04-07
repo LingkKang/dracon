@@ -181,7 +181,7 @@ mod tests {
         let fio = fio.unwrap();
 
         // Keys to write and read.
-        let keys = vec![
+        let keys = [
             "key1",
             "key_abcd",
             "random_key",
