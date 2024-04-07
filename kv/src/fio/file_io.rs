@@ -91,9 +91,17 @@ mod tests {
 
     use super::*;
 
+    macro_rules! write_data_and_assert {
+        ($data: expr, $fio: expr) => {
+            let result = $fio.write($data.clone().as_bytes());
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), $data.len());
+        };
+    }
+
     #[test]
     fn test_file_io_write() {
-        let file_path = std::path::PathBuf::from("./test.data");
+        let file_path = std::path::PathBuf::from("./test_write.data");
 
         // Create a file io instance
         let fio = FileIo::new(file_path.clone());
@@ -101,56 +109,52 @@ mod tests {
         let fio = fio.unwrap();
 
         let key1 = "key1";
-        let result = fio.write(key1.as_bytes());
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), key1.len());
+        write_data_and_assert!(key1, fio);
 
-        let key2 = "key2";
-        let result = fio.write(key2.as_bytes());
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), key2.len());
+        let key2 = "key_abcd";
+        write_data_and_assert!(key2, fio);
 
         // Clean up
         let del = std::fs::remove_file(file_path);
         assert!(del.is_ok());
     }
 
+    macro_rules! read_data_and_assert {
+        ($len: expr, $offset: expr, $fio: expr) => {
+            let mut buf = Vec::with_capacity($len);
+            buf.resize($len, 0);
+            let result = $fio.read(&mut buf, $offset);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), $len);
+            // Print the read data in decimal.
+            println!("buf: {:?}", buf);
+            // Print the read data in string.
+            println!("val: {:?}", std::str::from_utf8(&buf).unwrap());
+        };
+    }
+
     #[test]
     fn test_file_io_read() {
         // File reading is tested on top of file writing,
-        // so make sure that the file is written well before reading
+        // so make sure that the file is written well before reading.
 
-        // Initialize a file io instance
-        let file_path = std::path::PathBuf::from("./test.data");
+        // Initialize a file io instance.
+        let file_path = std::path::PathBuf::from("./test_read.data");
         let fio = FileIo::new(file_path.clone());
         assert!(fio.is_ok());
         let fio = fio.unwrap();
 
-        // Write data to the file
+        // Keys to write and read.
         let key1 = "key1";
-        let result = fio.write(key1.as_bytes());
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), key1.len());
+        let key2 = "key_abcd";
 
-        let key2 = "key2";
-        let result = fio.write(key2.as_bytes());
-        assert!(result.is_ok());
-        assert_eq!(result.ok().unwrap(), key2.len());
+        // Write data to the file.
+        write_data_and_assert!(key1, fio);
+        write_data_and_assert!(key2, fio);
 
-        // Read data from the file
-        let mut buf = [0u8; 4];
-        let result = fio.read(&mut buf, 0);
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), key1.len());
-        println!("buf: {:?}", buf);
-        println!("val: {:?}", std::str::from_utf8(&buf).unwrap());
-
-        let mut buf = [0u8; 4];
-        let result = fio.read(&mut buf, key1.len());
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), key2.len());
-        println!("buf: {:?}", buf);
-        println!("val: {:?}", std::str::from_utf8(&buf).unwrap());
+        // Read data from the file.
+        read_data_and_assert!(key1.len(), 0, fio);
+        read_data_and_assert!(key2.len(), key1.len(), fio);
 
         // Clean up
         let del = std::fs::remove_file(file_path);
