@@ -36,17 +36,47 @@ impl FileIo {
 impl IoManager for FileIo {
     #[allow(unused_variables)]
     fn read(&self, buf: &mut [u8], offset: usize) -> Result<usize> {
-        let mut write_guard = self.file.write().unwrap();
+        // Acquire a read lock on the file.
+        let read_guard = self.file.read();
+        let read_guard = match read_guard {
+            Ok(guard) => guard,
+            Err(e) => {
+                log::error!("Failed to acquire read lock on file: {}", e);
+                return Err(Err {
+                    code: ErrCode::ReadDataFileFailed,
+                    msg: "Failed to acquire read lock".to_owned()
+                        + &e.to_string(),
+                });
+            }
+        };
 
-        write_guard
-            .seek(std::io::SeekFrom::Start(offset as u64))
+        // Clone the file instance to read data.
+        let mut file_inst = read_guard
+            .try_clone()
             .map_err(|e| {
-                log::error!("Seek in data file err: {}", e);
-                Err { code: ErrCode::SeekInDataFileFailed, msg: e.to_string() }
+                log::error!("Failed to clone file descriptor: {}", e);
+                Err {
+                    code: ErrCode::ReadDataFileFailed,
+                    msg: "Failed to clone file descriptor ".to_owned()
+                        + &e.to_string(),
+                }
             })
             .unwrap();
 
-        let read_bytes = write_guard
+        // Seek to the offset.
+        file_inst
+            .seek(std::io::SeekFrom::Start(offset as u64))
+            .map_err(|e| {
+                log::error!("Failed to seek in file: {}", e);
+                Err {
+                    code: ErrCode::ReadDataFileFailed,
+                    msg: "Failed to seek in file ".to_owned() + &e.to_string(),
+                }
+            })
+            .unwrap();
+
+        // Read data from the file.
+        let read_bytes = file_inst
             .read(buf)
             .map_err(|e| {
                 log::error!("Read data file err: {}", e);
@@ -58,17 +88,21 @@ impl IoManager for FileIo {
     }
 
     fn write(&self, buf: &[u8]) -> Result<usize> {
+        // Acquire a write lock on the file.
         let write_guard = self.file.write();
         let mut write_guard = match write_guard {
             Ok(guard) => guard,
             Err(e) => {
-                log::error!("Failed to write file: {}", e);
+                log::error!("Failed to acquire write lock on file: {}", e);
                 return Err(Err {
                     code: ErrCode::WriteDataFileFailed,
-                    msg: e.to_string(),
+                    msg: "Failed to acquire write lock ".to_owned()
+                        + &e.to_string(),
                 });
             }
         };
+
+        // Write data to the file.
         match write_guard.write(buf) {
             Ok(size) => Ok(size),
             Err(e) => {
@@ -91,6 +125,7 @@ mod tests {
 
     use super::*;
 
+    /// Write data to the file and assert the write result.
     macro_rules! write_data_and_assert {
         ($data: expr, $fio: expr) => {
             let result = $fio.write($data.clone().as_bytes());
@@ -119,6 +154,7 @@ mod tests {
         assert!(del.is_ok());
     }
 
+    /// Read data from the file and assert the read data.
     macro_rules! read_data_and_assert {
         ($len: expr, $offset: expr, $fio: expr) => {
             let mut buf = Vec::with_capacity($len);
@@ -145,16 +181,40 @@ mod tests {
         let fio = fio.unwrap();
 
         // Keys to write and read.
-        let key1 = "key1";
-        let key2 = "key_abcd";
+        let keys = vec![
+            "key1",
+            "key_abcd",
+            "random_key",
+            "key_1234",
+            "a-key-that-is-very-long",
+        ];
 
         // Write data to the file.
-        write_data_and_assert!(key1, fio);
-        write_data_and_assert!(key2, fio);
+        for key in keys.iter() {
+            write_data_and_assert!(key, fio);
+        }
 
-        // Read data from the file.
-        read_data_and_assert!(key1.len(), 0, fio);
-        read_data_and_assert!(key2.len(), key1.len(), fio);
+        // Read data from the file in random order.
+        // Record the offsets of each key.
+        let mut offsets = Vec::new();
+        let mut offset: usize = 0;
+        for key in keys.iter() {
+            offsets.push(offset);
+            offset += key.len();
+        }
+
+        // Save the keys and offsets in pairs.
+        let mut pairs: Vec<(&str, usize)> =
+            keys.iter().zip(offsets.iter()).map(|(&s, &i)| (s, i)).collect();
+
+        // Shuffle the key-offset pairs.
+        use rand::seq::SliceRandom;
+        pairs.shuffle(&mut rand::thread_rng());
+
+        // Read data from the file in random order.
+        for (key, offset) in pairs.iter() {
+            read_data_and_assert!(key.len(), *offset, fio);
+        }
 
         // Clean up
         let del = std::fs::remove_file(file_path);
