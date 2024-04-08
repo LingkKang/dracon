@@ -1,3 +1,4 @@
+use crate::err::Result;
 use crate::fio;
 
 use std::sync::Arc;
@@ -18,7 +19,7 @@ pub struct DataFile {
 
 impl DataFile {
     /// Create a new data file.
-    pub fn new(path: &std::path::Path, id: u64) -> crate::err::Result<Self> {
+    pub fn new(path: &std::path::Path, id: u64) -> Result<Self> {
         let io_manager = crate::fio::file_io::FileIo::new(path);
         let io_manager = match io_manager {
             Ok(io_manager) => io_manager,
@@ -44,7 +45,7 @@ impl DataFile {
 
     /// Write data to the file.
     /// The writing offset [`DataFile::offset`] will also be updated.
-    pub fn write(&self, data: &[u8]) -> crate::err::Result<u64> {
+    pub fn write(&self, data: &[u8]) -> Result<u64> {
         let result = self.io_manager.write(data);
         match result {
             Ok(size) => {
@@ -56,8 +57,17 @@ impl DataFile {
         }
     }
 
-    pub fn sync(&self) -> crate::err::Result<()> {
+    pub fn sync(&self) -> Result<()> {
         self.io_manager.sync()
+    }
+
+    pub fn read(&self, offset: u64) -> Result<Vec<u8>> {
+        let mut buffer: Vec<u8> = Vec::new();
+        let result = self.io_manager.read(&mut buffer, offset);
+        match result {
+            Ok(_) => Ok(buffer),
+            Err(err) => Err(err),
+        }
     }
 }
 

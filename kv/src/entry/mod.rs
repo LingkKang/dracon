@@ -41,9 +41,24 @@ impl Entry {
     /// Encode the entry into a byte array.
     pub fn encode(&mut self) -> Vec<u8> {
         let mut encoded = Vec::new();
+        encoded.push(self.key.len() as u8);
+        encoded.push(self.val.len() as u8);
         encoded.extend_from_slice(&self.key);
         encoded.extend_from_slice(&self.val);
         encoded.push(self.typ.clone() as u8);
         encoded
+    }
+
+    pub fn decode(encoded: &[u8]) -> Self {
+        let key_len = encoded[0] as usize;
+        let val_len = encoded[1] as usize;
+        let key = encoded[2..2 + key_len].to_vec();
+        let val = encoded[2 + key_len..2 + key_len + val_len].to_vec();
+        let typ = match encoded[2 + key_len + val_len] {
+            1 => EntryType::Normal,
+            2 => EntryType::Deleted,
+            _ => panic!("Invalid entry type"),
+        };
+        Entry { key, val, typ }
     }
 }

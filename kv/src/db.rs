@@ -1,8 +1,10 @@
 //! APIs that expose to the user to interact with the database.
 
 use crate::entry::data_file::DataFile;
+use crate::entry::Entry;
 use crate::err::Err;
 use crate::err::ErrCode;
+use crate::err::Result;
 
 use std::sync::Arc;
 
@@ -18,15 +20,15 @@ pub struct Engine {
 impl Engine {
     /// Save a key-value data pair.
     /// `key` should not be empty.
-    pub fn put(&self, key: &[u8], value: &[u8]) -> crate::err::Result<()> {
+    pub fn put(&self, key: &[u8], value: &[u8]) -> Result<()> {
         if key.is_empty() {
-            return Err(crate::err::Err {
-                code: crate::err::ErrCode::EmptyKeyError,
+            return Err(Err {
+                code: ErrCode::EmptyKeyError,
                 msg: "Key should not be empty".to_owned(),
             });
         }
 
-        let mut entry = crate::entry::Entry {
+        let mut entry = Entry {
             key: key.to_vec(),
             val: value.to_vec(),
             typ: crate::entry::EntryType::Normal,
@@ -52,8 +54,8 @@ impl Engine {
     /// Append an entry to the current active data file.
     fn append_entry(
         &self,
-        entry: &mut crate::entry::Entry,
-    ) -> crate::err::Result<crate::entry::EntryPos> {
+        entry: &mut Entry,
+    ) -> Result<crate::entry::EntryPos> {
         let path = self.config.data_path_dir;
 
         // Encode the input data.
@@ -115,5 +117,79 @@ impl Engine {
             file_id: active_file.id(),
             offset: write_offset,
         })
+    }
+
+    /// Get the value of a key.
+    pub fn get(&self, key: &[u8]) -> Result<Entry> {
+        // Key should not be empty.
+        if key.is_empty() {
+            return Err(Err {
+                code: ErrCode::EmptyKeyError,
+                msg: "Key should not be empty".to_owned(),
+            });
+        }
+
+        // Get the position of the key `EntryPos` from the in-memory index.
+        let pos = match self.indices.get(key.to_vec()) {
+            Some(p) => p,
+            None => {
+                return Err(Err {
+                    code: ErrCode::KeyNotFoundError,
+                    msg: format!("Key {:?} not found", key),
+                });
+            }
+        };
+
+        let id = pos.file_id;
+        let offset = pos.offset;
+
+        // Acquire read lock on the active file.
+        let active = match self.active_data_file.read() {
+            Ok(f) => f,
+            Err(e) => {
+                return Err(Err {
+                    code: ErrCode::ReadDataFileFailed,
+                    msg: "Failed to acquire read lock".to_owned()
+                        + &e.to_string(),
+                });
+            }
+        };
+
+        // Acquire read lock on the hash set of inactive files.
+        let old = match self.older_data_files.read() {
+            Ok(file_set) => file_set,
+            Err(e) => {
+                return Err(Err {
+                    code: ErrCode::ReadDataFileFailed,
+                    msg: "Failed to acquire read lock".to_owned()
+                        + &e.to_string(),
+                });
+            }
+        };
+
+        // Check where the data is stored.
+        match active.id() == id {
+            true => {
+                // The data is store in the active file.
+                // Read the data from the active file.
+                let data = active.read(offset)?;
+                // Decode the data into an entry and return it.
+                Ok(Entry::decode(&data))
+            }
+            false => {
+                // The data is stored in one of the inactive files.
+                let old_file = match old.get(&id) {
+                    Some(f) => f,
+                    None => {
+                        return Err(Err {
+                            code: ErrCode::ReadDataFileFailed,
+                            msg: format!("File with id {} not found", id),
+                        });
+                    }
+                };
+                let data = old_file.read(offset)?;
+                Ok(Entry::decode(&data))
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 pub enum ErrCode {
     EmptyKeyError,
+    KeyNotFoundError,
     IndexUpdateFailed,
     OpenDataFileFailed,
     ReadDataFileFailed,
@@ -11,6 +12,7 @@ impl std::fmt::Debug for ErrCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ErrCode::EmptyKeyError => write!(f, "The key is empty"),
+            ErrCode::KeyNotFoundError => write!(f, "The key is not found"),
             ErrCode::IndexUpdateFailed => {
                 write!(f, "Failed to update the index")
             }
