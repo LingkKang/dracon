@@ -37,8 +37,7 @@ impl super::Indexer for BTree {
     }
 
     fn get(&self, key: Vec<u8>) -> Option<EntryPos> {
-        let read_guard = self.tree.read();
-        let read_guard = match read_guard {
+        let read_guard = match self.tree.read() {
             Ok(guard) => guard,
             Err(_) => return None,
         };
@@ -46,8 +45,7 @@ impl super::Indexer for BTree {
     }
 
     fn del(&self, key: Vec<u8>) -> bool {
-        let write_guard = self.tree.write();
-        let mut write_guard = match write_guard {
+        let mut write_guard = match self.tree.write() {
             Ok(guard) => guard,
             Err(_) => return false,
         };

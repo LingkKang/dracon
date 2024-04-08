@@ -64,16 +64,7 @@ impl Engine {
 
         // Get the current active file.
         let active_file = self.active_data_file.write();
-        let mut active_file = match active_file {
-            Ok(f) => f,
-            Err(e) => {
-                return Err(Err {
-                    code: ErrCode::WriteDataFileFailed,
-                    msg: "Failed to acquire write lock".to_owned()
-                        + &e.to_string(),
-                });
-            }
-        };
+        let mut active_file = crate::err::match_write_lock!(active_file);
 
         // Check if the active file can hold the entry.
         if active_file.offset() + len > self.config.data_file_size {
@@ -84,16 +75,9 @@ impl Engine {
             // 2. Save the active file into the hash set of inactive files.
             let id = active_file.id();
             let older_data_files = self.older_data_files.write();
-            let mut older_data_files = match older_data_files {
-                Ok(f) => f,
-                Err(e) => {
-                    return Err(Err {
-                        code: ErrCode::WriteDataFileFailed,
-                        msg: "Failed to acquire write lock".to_owned()
-                            + &e.to_string(),
-                    });
-                }
-            };
+            let mut older_data_files =
+                crate::err::match_write_lock!(older_data_files);
+
             let data_file = DataFile::new(path, id)?;
             older_data_files.insert(id, data_file);
 
@@ -143,29 +127,9 @@ impl Engine {
         let id = pos.file_id;
         let offset = pos.offset;
 
-        // Acquire read lock on the active file.
-        let active = match self.active_data_file.read() {
-            Ok(f) => f,
-            Err(e) => {
-                return Err(Err {
-                    code: ErrCode::ReadDataFileFailed,
-                    msg: "Failed to acquire read lock".to_owned()
-                        + &e.to_string(),
-                });
-            }
-        };
-
-        // Acquire read lock on the hash set of inactive files.
-        let old = match self.older_data_files.read() {
-            Ok(file_set) => file_set,
-            Err(e) => {
-                return Err(Err {
-                    code: ErrCode::ReadDataFileFailed,
-                    msg: "Failed to acquire read lock".to_owned()
-                        + &e.to_string(),
-                });
-            }
-        };
+        // Acquire read lock on the active file and the older files.
+        let active = crate::err::match_read_lock!(self.active_data_file.read());
+        let old = crate::err::match_read_lock!(self.older_data_files.read());
 
         // Check where the data is stored.
         match active.id() == id {

@@ -36,18 +36,7 @@ impl FileIo {
 impl IoManager for FileIo {
     fn read(&self, buf: &mut [u8], offset: u64) -> Result<u64> {
         // Acquire a read lock on the file.
-        let read_guard = self.file.read();
-        let read_guard = match read_guard {
-            Ok(guard) => guard,
-            Err(e) => {
-                log::error!("Failed to acquire read lock on file: {}", e);
-                return Err(Err {
-                    code: ErrCode::ReadDataFileFailed,
-                    msg: "Failed to acquire read lock".to_owned()
-                        + &e.to_string(),
-                });
-            }
-        };
+        let read_guard = crate::err::match_read_lock!(self.file.read());
 
         // Clone the file instance to read data.
         // TODO: Do I really need to clone the file descriptor?
@@ -89,18 +78,7 @@ impl IoManager for FileIo {
 
     fn write(&self, buf: &[u8]) -> Result<u64> {
         // Acquire a write lock on the file.
-        let write_guard = self.file.write();
-        let mut write_guard = match write_guard {
-            Ok(guard) => guard,
-            Err(e) => {
-                log::error!("Failed to acquire write lock on file: {}", e);
-                return Err(Err {
-                    code: ErrCode::WriteDataFileFailed,
-                    msg: "Failed to acquire write lock ".to_owned()
-                        + &e.to_string(),
-                });
-            }
-        };
+        let mut write_guard = crate::err::match_write_lock!(self.file.write());
 
         // Write data to the file.
         match write_guard.write(buf) {
@@ -119,18 +97,7 @@ impl IoManager for FileIo {
     /// Basically a wrapper around [`std::fs::File::sync_all()`].
     fn sync(&self) -> Result<()> {
         // Acquire a read lock on the file.
-        let read_guard = self.file.read();
-        let read_guard = match read_guard {
-            Ok(guard) => guard,
-            Err(e) => {
-                log::error!("Failed to acquire read lock on file: {}", e);
-                return Err(Err {
-                    code: ErrCode::SyncDataFileFailed,
-                    msg: "Failed to acquire read lock ".to_owned()
-                        + &e.to_string(),
-                });
-            }
-        };
+        let read_guard = crate::err::match_read_lock!(self.file.read());
 
         // Sync the file.
         if let Err(e) = read_guard.sync_all() {

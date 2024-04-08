@@ -1,4 +1,6 @@
 pub enum ErrCode {
+    AcquireReadLockFailed,
+    AcquireWriteLockFailed,
     EmptyKeyError,
     KeyNotFoundError,
     IndexUpdateFailed,
@@ -11,6 +13,12 @@ pub enum ErrCode {
 impl std::fmt::Debug for ErrCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            ErrCode::AcquireReadLockFailed => {
+                write!(f, "Failed to acquire read lock")
+            }
+            ErrCode::AcquireWriteLockFailed => {
+                write!(f, "Failed to acquire write lock")
+            }
             ErrCode::EmptyKeyError => write!(f, "The key is empty"),
             ErrCode::KeyNotFoundError => write!(f, "The key is not found"),
             ErrCode::IndexUpdateFailed => {
@@ -36,6 +44,44 @@ pub struct Err {
     pub code: ErrCode,
     pub msg: String,
 }
+
+/// Match the result of acquiring a write lock.
+/// If the result is an error, return the error
+/// with the code [`ErrCode::AcquireWriteLockFailed`].
+macro_rules! match_read_lock {
+    ($result:expr) => {
+        match $result {
+            Ok(guard) => guard,
+            Err(e) => {
+                return Err(Err {
+                    code: ErrCode::AcquireReadLockFailed,
+                    msg: e.to_string(),
+                });
+            }
+        }
+    };
+}
+
+pub(crate) use match_read_lock;
+
+/// Match the result of acquiring a write lock.
+/// If the result is an error, return the error
+/// with the code [`ErrCode::AcquireWriteLockFailed`].
+macro_rules! match_write_lock {
+    ($result:expr) => {
+        match $result {
+            Ok(guard) => guard,
+            Err(e) => {
+                return Err(Err {
+                    code: ErrCode::AcquireWriteLockFailed,
+                    msg: e.to_string(),
+                });
+            }
+        }
+    };
+}
+
+pub(crate) use match_write_lock;
 
 impl std::fmt::Debug for Err {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
